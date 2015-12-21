@@ -1,0 +1,20 @@
+#gameGraph{
+  font-family:'Courier';
+  
+}
+#history{
+	background-color:gray;
+	font-family:'Courier';
+}
+#combat{
+	background-color:#F7A44A;
+}
+#combatWound{
+	background-color:#F7F307;
+}
+#combatBreak{
+	background-color:#F51111;
+}
+#combatMiss{
+	background-color:#B2DDEB;
+}
