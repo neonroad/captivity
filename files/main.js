@@ -40,6 +40,7 @@ item = function(x,y,symbol,desc){
   this.symbol = symbol;
   this.desc = desc;
   this.color = symbol;
+  this.name = desc;
   grid[(this.y * 10) + this.x].items.push(this);
 }
 
@@ -74,6 +75,7 @@ player.limbs = new Object;
 player.limbs.parts = [];
 player.alive = true;
 player.inv = [];
+player.wield = 0;
 player.blind = 0;
 player.createLimbs = function(){
   player.limbs.head = new health('healthy');
@@ -154,7 +156,7 @@ player.createLimbs();
 player.skills = new Object;
 player.generateSkills = function(){
   player.dodging = new skill('dodging',1,1);
-  player.unarmed = new skill('unarmed',1,1);
+  player.unarmed = new skill('unarmed',100,1);
 }
 player.generateSkills();
 
@@ -405,6 +407,7 @@ update = function(){
     for(e=0;e<entities.length;e++){
       if(entities[e].name !== "dead"){
         entities[e].update();
+        
       }
     }
   }

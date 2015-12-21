@@ -12,6 +12,8 @@ enemy = function(x,y,symbol,desc){
 	this.limbs.head = new health('healthy');
 	this.limbs.head.name = 'head';
 	this.limbs.parts.push(this.limbs.head);
+	this.turnBuffer = 0;
+	this.stall = 0;
 
 	this.limbs.torso = new health('healthy');
 	this.limbs.torso.name = 'torso';
@@ -274,7 +276,18 @@ enemy = function(x,y,symbol,desc){
 			grid[((this.y*10) + this.x)].character = null;
 
 		}
-		else if(player.alive == true && this.alive == true){
+		this.stall --;
+		this.turnBuffer --;
+		if(this.turnBuffer > 0 && this.stall <= 0){
+			this.stall = this.turnBuffer;
+		}
+		if(player.alive == true && this.alive == true && this.stall <= 0){
+			this.turnBuffer = 0;
+			for(i=0;i<this.limbs.parts.length;i++){
+				if(this.limbs.parts[i].status == "broken"){
+					this.turnBuffer ++;
+				}
+			}
 			if(player.x < this.x){
 				if(this.checkAvailability('left')){
 					this.x --;
@@ -307,7 +320,10 @@ enemy = function(x,y,symbol,desc){
 			        grid[prevLoc-10].character = null;    
 				}
 			}
+			
+
 		}
+		
 
 	}
 }
@@ -332,3 +348,4 @@ entities.push(robot);**/
 
 var weapon = new item(5,5,"/","weapon");
 weapon.type = "sharp";
+weapon.name = "knife";
