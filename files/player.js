@@ -18,6 +18,11 @@ document.body.onkeydown = function(event){
               combat(player,grid[(prevLoc + 1)].character,"unarmed");
               turn++;
             }
+            else if(grid[(prevLoc + 1)].character !== null && player.wield !== 0){
+              player.checkBrokenBones();
+              combat(player,grid[(prevLoc + 1)].character,"melee");
+              turn++;
+            }
             return false;
           }
           else{
@@ -33,6 +38,11 @@ document.body.onkeydown = function(event){
             if(grid[(prevLoc + 10)].character !== null && player.wield == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 10)].character,"unarmed");
+              turn++;
+            }
+            else if(grid[(prevLoc + 10)].character !== null && player.wield !== 0){
+              player.checkBrokenBones();
+              combat(player,grid[(prevLoc + 10)].character,"melee");
               turn++;
             }
             return false;
@@ -53,6 +63,11 @@ document.body.onkeydown = function(event){
               combat(player,grid[(prevLoc -1)].character,"unarmed");
               turn++;
             }
+            else if(grid[(prevLoc - 1)].character !== null && player.wield !== 0){
+              player.checkBrokenBones();
+              combat(player,grid[(prevLoc - 1)].character,"melee");
+              turn++;
+            }
             return false;
           }
           else{
@@ -68,6 +83,11 @@ document.body.onkeydown = function(event){
             if(grid[(prevLoc - 10)].character !== null && player.wield == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc - 10)].character,"unarmed");
+              turn++;
+            }
+            else if(grid[(prevLoc - 10)].character !== null && player.wield !== 0){
+              player.checkBrokenBones();
+              combat(player,grid[(prevLoc - 10)].character,"melee");
               turn++;
             }
             return false;
@@ -129,7 +149,7 @@ document.body.onkeydown = function(event){
             else if (map[190]){
               turn++;
             }
-            else if (map[188]){
+            else if (map[188]){ //pick up
               map[event.keyCode] = false;
               for(i=0;i<grid[(player.y*10)+player.x].items.length;i++){
                 if(grid[(player.y*10)+player.x].items[i].desc == 'weapon'){
@@ -137,7 +157,8 @@ document.body.onkeydown = function(event){
                     player.inv.push(grid[(player.y*10)+player.x].items[i]);
                     grid[(player.y*10)+player.x].items.splice(i,1);
                     turn++;
-                    if(player.wield == 0){
+                    player.checkBrokenBones();
+                    if(player.wield == 0 && player.grasp > 0){
                       if(confirm("Wield " + player.inv[player.inv.length-1].name + "?")){
                         player.wield = player.inv[player.inv.length-1];
                       }
@@ -148,6 +169,9 @@ document.body.onkeydown = function(event){
                   }
                 }
               }
+            }
+            for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){
+              History.innerHTML += "You stand atop " + grid[(player.y*10)+player.x].items[t].desc + "<br>";
             }
         }
       }

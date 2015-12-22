@@ -176,6 +176,214 @@ enemy = function(x,y,symbol,desc){
 	  }
 	}
 
+	this.gib = function(part, force){
+		if(part !== undefined){
+			if(part.name == 'head'){
+				this.alive = 0;
+				this.update();
+				turn++;
+			}
+			if(part.name == 'neck'){
+				for(x=0;x<this.limbs.parts.length;x++){
+					//console.log("hey");
+					if(this.limbs.parts[x].name == 'head'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+				for(x=0;x<this.limbs.parts.length;x++){
+					if(this.limbs.parts[x] == part){
+						this.limbs.parts.splice(x,1);
+					}
+				}
+				return;
+			}
+			if(part.name == 'torso'){
+				for(x=0;x<this.limbs.parts.length;x++){
+					if(this.limbs.parts[x] == part){
+						//console.log('its the torso');
+						break;
+					}
+					else{
+						this.gib(this.limbs.parts[x]);
+						x= 0;
+					}
+				}
+				//return;
+
+			}
+			if(force == undefined){
+				force = randomGen(2,8);
+			}
+			giblet = new item(this.x,this.y,"~",part.name);
+			grid[(this.y*10) + this.x].colorIn(3,9,0);
+			grid[(this.y*10) + this.x].items.push(giblet);
+			giblet.color = "<span style='background-color:#594341';>"+giblet.symbol+"</span>"
+			var direction = randomGen(1,9);
+
+
+			if(direction == 1){
+				direction = 'up';
+				dirNum = 10;
+				dirAdvX = 0;
+				dirAdvY = -1;
+			}
+			else if(direction == 2){
+				direction = "left";
+				dirNum = 1;
+				dirAdvX = -1;
+				dirAdvY = 0;
+			}
+			else if(direction == 3){
+				direction = "down";
+				dirNum = -10;
+				dirAdvX = 0;
+				dirAdvY = 1;
+			}
+			else if(direction == 4){
+				direction = "right";
+				dirNum = -1;
+				dirAdvX = 1;
+				dirAdvY = 0;
+			}
+			else if(direction == 5){
+				direction = "upright";
+				dirNum = 9;
+				dirAdvX = 1;
+				dirAdvY = -1;
+			}
+			else if(direction == 6){
+				direction = "upleft";
+				dirNum = 11;
+				dirAdvX = -1;
+				dirAdvY = -1;
+			}
+			else if(direction == 7){
+				direction = "downright";
+				dirNum = -11;
+				dirAdvX = 1;
+				dirAdvY = 1;
+			}
+			else if(direction == 8){
+				direction = "downleft";
+				dirNum = -9;
+				dirAdvX = -1;
+				dirAdvY = 1;
+			}
+			for(f=0;f<force;f++){
+				if(direction !== undefined){
+					for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+						if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+							//console.log(part.name + " IS GONNA BUG OUT");
+							grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+							grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
+						}
+					}
+					if(grid[(giblet.y*10) + giblet.x +(dirNum*-1)].desc !== 'floor'){
+						for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+							if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+								//console.log(part.name + " IS GONNA BUG OUT");
+								grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+								grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
+							}
+						}
+						//console.log(part.name + " IS GONNA BUG OUT1");
+					}
+					else{
+						giblet.x = giblet.x + dirAdvX;
+						giblet.y = giblet.y + dirAdvY;
+						grid[(giblet.y*10) + giblet.x].items.push(giblet);
+						for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+							if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+								//console.log("destroy");
+								grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+								grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
+								//console.log(part.name + " IS GONNA BUG OUT");
+							}
+						}
+						//console.log(part.name + " IS GONNA BUG OUT");
+					}
+
+				}
+				
+			}
+			for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+				if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+					//console.log(part.name + " IS GONNA BUG OUT");
+					grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+					grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
+				}
+			}
+			for(x=0;x<this.limbs.parts.length;x++){
+				if(this.limbs.parts[x] == part){
+					this.limbs.parts.splice(x,1);
+				}
+			}
+			if(part.name == "right upper arm"){
+				for(x=0;x<this.limbs.parts.length;x++){
+					//console.log("hey");
+					if(this.limbs.parts[x].name == 'right lower arm'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == 'right lower arm'){
+				for(x=0;x<this.limbs.parts.length;x++){
+					if(this.limbs.parts[x].name == 'right claw'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == "left upper arm"){
+				for(x=0;x<this.limbs.parts.length;x++){
+					if(this.limbs.parts[x].name == 'left lower arm'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == 'left lower arm'){
+				for(x=0;x<this.limbs.parts.length;x++){
+					if(this.limbs.parts[x].name == 'left claw'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == "right upper leg"){
+				for(x=0;x<this.limbs.parts.length;x++){
+					//console.log("hey");
+					if(this.limbs.parts[x].name == 'right lower leg'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == "right lower leg"){
+				for(x=0;x<this.limbs.parts.length;x++){
+					//console.log("hey");
+					if(this.limbs.parts[x].name == 'right foot'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == "left upper leg"){
+				for(x=0;x<this.limbs.parts.length;x++){
+					//console.log("hey");
+					if(this.limbs.parts[x].name == 'left lower leg'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			if(part.name == "left lower leg"){
+				for(x=0;x<this.limbs.parts.length;x++){
+					//console.log("hey");
+					if(this.limbs.parts[x].name == 'left foot'){
+						this.gib(this.limbs.parts[x]);
+					}
+				}
+			}
+			console.log('Gibbed ' + part.name);
+		}
+
+	}
+
 	this.checkAvailability = function(direction){
 		if(direction == "left"){
 	    	//testTile = player;
@@ -282,7 +490,7 @@ enemy = function(x,y,symbol,desc){
 			this.stall = this.turnBuffer;
 		}
 		if(player.alive == true && this.alive == true && this.stall <= 0){
-			this.turnBuffer = 0;
+			this.turnBuffer = 15-this.limbs.parts.length;
 			for(i=0;i<this.limbs.parts.length;i++){
 				if(this.limbs.parts[i].status == "broken"){
 					this.turnBuffer ++;
@@ -329,7 +537,7 @@ enemy = function(x,y,symbol,desc){
 }
 
 
-var robot = new enemy(8,2, "Θ",'Robot');
+var robot = new enemy(5,5, "Θ",'Robot');
 robot.constructStandardRobot();
 entities.push(robot);
 /**
@@ -346,6 +554,6 @@ robot.constructStandardRobot();
 entities.push(robot);**/
 
 
-var weapon = new item(5,5,"/","weapon");
+var weapon = new item(1,1,"/","weapon");
 weapon.type = "sharp";
 weapon.name = "knife";

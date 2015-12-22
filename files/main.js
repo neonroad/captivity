@@ -157,6 +157,7 @@ player.skills = new Object;
 player.generateSkills = function(){
   player.dodging = new skill('dodging',1,1);
   player.unarmed = new skill('unarmed',100,1);
+  player.melee = new skill('melee',1,1);
 }
 player.generateSkills();
 
@@ -258,10 +259,15 @@ player.bleed = function(source, level){
 
 player.checkBrokenBones = function(){
   turnBuffer = 1;
+  player.grasp = 0;
   for(h=0;h<player.limbs.parts.length;h++){
     if(player.limbs.parts[h].status == "broken"){
       turnBuffer += 1;
     }
+    if(player.limbs.parts[h].name == "right hand" && player.limbs.parts[h].status !== "broken"){
+      player.grasp ++;
+    }
+    
   }
 }
 
@@ -387,10 +393,6 @@ update = function(){
     player.update();
   }
   if(turn > pastTurn && player.alive == true){
-    if(History.legible >= 10){
-      History.innerHTML = "";
-      History.legible = 0;
-    }
     for(e=0;e<entities.length;e++){
       entities[e].update();
       if(entities[e].alive == false){
@@ -400,16 +402,16 @@ update = function(){
   }
   else if(player.alive == false){
     turn++;
-    if(History.legible > 5){
-      History.innerHTML = "";
-      History.legible = 0;
-    }
     for(e=0;e<entities.length;e++){
       if(entities[e].name !== "dead"){
         entities[e].update();
         
       }
     }
+  }
+  if(History.legible > 15){
+    History.innerHTML = "";
+    History.legible = 0;
   }
   /**if(player.blind > 0 && debounce == 0){
     debounce = 1;
