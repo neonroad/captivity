@@ -257,17 +257,233 @@ player.bleed = function(source, level){
   }
 }
 
+player.gib = function(part, force){
+    this.partSymbol = "~";
+    if(part !== undefined){
+      if(part.name == 'head' && this.alive == 1){
+        this.alive = 0;
+        this.update();
+      }
+      if(part.name == 'neck'){
+        for(x=0;x<this.limbs.parts.length;x++){
+          //console.log("hey");
+          if(this.limbs.parts[x].name == 'head'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+        for(x=0;x<this.limbs.parts.length;x++){
+          if(this.limbs.parts[x] == part){
+            this.limbs.parts.splice(x,1);
+          }
+        }
+        return;
+      }
+      if(part.name == 'torso'){
+        this.partSymbol = "¥";
+        this.alive = 0;
+        for(x=0;x<this.limbs.parts.length;x++){
+          if(this.limbs.parts[x] == part){
+            //console.log('its the torso');
+            break;
+          }
+          else{
+            //this.gib(this.limbs.parts[x]);
+          }
+        }
+        //return;
+
+      }
+      if(force == undefined){
+        force = randomGen(2,8);
+      }
+      giblet = new item(this.x,this.y,this.partSymbol,part.name);
+      grid[(this.y*10) + this.x].colorIn('C',4,2);
+      grid[(this.y*10) + this.x].items.push(giblet);
+      giblet.color = "<span style='background-color:#6B0000';>"+giblet.symbol+"</span>"
+      var direction = randomGen(1,9);
+
+
+      if(direction == 1){
+        direction = 'up';
+        dirNum = 10;
+        dirAdvX = 0;
+        dirAdvY = -1;
+      }
+      else if(direction == 2){
+        direction = "left";
+        dirNum = 1;
+        dirAdvX = -1;
+        dirAdvY = 0;
+      }
+      else if(direction == 3){
+        direction = "down";
+        dirNum = -10;
+        dirAdvX = 0;
+        dirAdvY = 1;
+      }
+      else if(direction == 4){
+        direction = "right";
+        dirNum = -1;
+        dirAdvX = 1;
+        dirAdvY = 0;
+      }
+      else if(direction == 5){
+        direction = "upright";
+        dirNum = 9;
+        dirAdvX = 1;
+        dirAdvY = -1;
+      }
+      else if(direction == 6){
+        direction = "upleft";
+        dirNum = 11;
+        dirAdvX = -1;
+        dirAdvY = -1;
+      }
+      else if(direction == 7){
+        direction = "downright";
+        dirNum = -11;
+        dirAdvX = 1;
+        dirAdvY = 1;
+      }
+      else if(direction == 8){
+        direction = "downleft";
+        dirNum = -9;
+        dirAdvX = -1;
+        dirAdvY = 1;
+      }
+      for(f=0;f<force;f++){
+        if(direction !== undefined){
+          for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+            if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+              //console.log(part.name + " IS GONNA BUG OUT");
+              grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+              grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
+            }
+          }
+          if(grid[(giblet.y*10) + giblet.x +(dirNum*-1)].desc !== 'floor'){
+            for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+                //console.log(part.name + " IS GONNA BUG OUT");
+                grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+                grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
+              }
+            }
+            //console.log(part.name + " IS GONNA BUG OUT1");
+          }
+          else{
+            giblet.x = giblet.x + dirAdvX;
+            giblet.y = giblet.y + dirAdvY;
+            grid[(giblet.y*10) + giblet.x].items.push(giblet);
+            for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+                //console.log("destroy");
+                grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+                grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
+                //console.log(part.name + " IS GONNA BUG OUT");
+              }
+            }
+            //console.log(part.name + " IS GONNA BUG OUT");
+          }
+
+        }
+        
+      }
+      for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
+        if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+          //console.log(part.name + " IS GONNA BUG OUT");
+          grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
+          grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
+        }
+      }
+      for(x=0;x<this.limbs.parts.length;x++){
+        if(this.limbs.parts[x] == part){
+          this.limbs.parts.splice(x,1);
+        }
+      }
+      if(part.name == "right upper arm"){
+        for(x=0;x<this.limbs.parts.length;x++){
+          //console.log("hey");
+          if(this.limbs.parts[x].name == 'right lower arm'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == 'right lower arm'){
+        for(x=0;x<this.limbs.parts.length;x++){
+          if(this.limbs.parts[x].name == 'right hand'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == "left upper arm"){
+        for(x=0;x<this.limbs.parts.length;x++){
+          if(this.limbs.parts[x].name == 'left lower arm'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == 'left lower arm'){
+        for(x=0;x<this.limbs.parts.length;x++){
+          if(this.limbs.parts[x].name == 'left hand'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == "right upper leg"){
+        for(x=0;x<this.limbs.parts.length;x++){
+          //console.log("hey");
+          if(this.limbs.parts[x].name == 'right lower leg'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == "right lower leg"){
+        for(x=0;x<this.limbs.parts.length;x++){
+          //console.log("hey");
+          if(this.limbs.parts[x].name == 'right foot'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == "left upper leg"){
+        for(x=0;x<this.limbs.parts.length;x++){
+          //console.log("hey");
+          if(this.limbs.parts[x].name == 'left lower leg'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      if(part.name == "left lower leg"){
+        for(x=0;x<this.limbs.parts.length;x++){
+          //console.log("hey");
+          if(this.limbs.parts[x].name == 'left foot'){
+            this.gib(this.limbs.parts[x]);
+          }
+        }
+      }
+      console.log('Gibbed ' + part.name);
+    }
+
+  }
+
 player.checkBrokenBones = function(){
   turnBuffer = 1;
   player.grasp = 0;
+  turnBuffer = 19-player.limbs.parts.length;
   for(h=0;h<player.limbs.parts.length;h++){
     if(player.limbs.parts[h].status == "broken"){
       turnBuffer += 1;
     }
-    if(player.limbs.parts[h].name == "right hand" && player.limbs.parts[h].status !== "broken"){
+    if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "right hand") && player.limbs.parts[h].status !== "broken"){
       player.grasp ++;
     }
     
+  }
+  if(player.grasp == 0){
+    if(player.wield !== 0){
+        grid[(player.y *10) + player.x].items.push(player.wield);
+        player.wield = 0;
+    }
   }
 }
 

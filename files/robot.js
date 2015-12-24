@@ -14,6 +14,7 @@ enemy = function(x,y,symbol,desc){
 	this.limbs.parts.push(this.limbs.head);
 	this.turnBuffer = 0;
 	this.stall = 0;
+	this.wield = 0;
 
 	this.limbs.torso = new health('healthy');
 	this.limbs.torso.name = 'torso';
@@ -77,6 +78,7 @@ enemy = function(x,y,symbol,desc){
 	this.generateSkills = function(){
 		this.unarmed = new skill('unarmed',5,1);
 		this.dodging = new skill('dodging',1,1);
+		this.melee = new skill('melee',10,1);
 	}
 	this.generateSkills();
 
@@ -177,11 +179,11 @@ enemy = function(x,y,symbol,desc){
 	}
 
 	this.gib = function(part, force){
+		this.partSymbol = "~";
 		if(part !== undefined){
-			if(part.name == 'head'){
+			if(part.name == 'head' && this.alive == 1){
 				this.alive = 0;
 				this.update();
-				turn++;
 			}
 			if(part.name == 'neck'){
 				for(x=0;x<this.limbs.parts.length;x++){
@@ -198,6 +200,8 @@ enemy = function(x,y,symbol,desc){
 				return;
 			}
 			if(part.name == 'torso'){
+				this.partSymbol = "¥";
+				this.alive = 0;
 				for(x=0;x<this.limbs.parts.length;x++){
 					if(this.limbs.parts[x] == part){
 						//console.log('its the torso');
@@ -214,7 +218,7 @@ enemy = function(x,y,symbol,desc){
 			if(force == undefined){
 				force = randomGen(2,8);
 			}
-			giblet = new item(this.x,this.y,"~",part.name);
+			giblet = new item(this.x,this.y,this.partSymbol,part.name);
 			grid[(this.y*10) + this.x].colorIn(3,9,0);
 			grid[(this.y*10) + this.x].items.push(giblet);
 			giblet.color = "<span style='background-color:#594341';>"+giblet.symbol+"</span>"
@@ -385,6 +389,7 @@ enemy = function(x,y,symbol,desc){
 	}
 
 	this.checkAvailability = function(direction){
+		//check for available items at feet
 		if(direction == "left"){
 	    	//testTile = player;
 	        prevLoc = ((this.y*10) + this.x);
@@ -394,6 +399,10 @@ enemy = function(x,y,symbol,desc){
 	          //console.log("Can't do that!");
 	          	if(grid[(prevLoc - 1)].character == player && this.inv.length == 0){
 			        combat(this,player,"unarmed");
+			        return false;
+		        }
+		        if(grid[(prevLoc - 1)].character == player && this.inv.length > 0){
+			        combat(this,player,"melee");
 			        return false;
 		        }
 	          return false;
@@ -411,6 +420,10 @@ enemy = function(x,y,symbol,desc){
 			  	if(grid[(prevLoc - 10)].character == player && this.inv.length == 0){
 			    	combat(this,player,"unarmed");
 			    	return false;
+		        }
+		        if(grid[(prevLoc - 10)].character == player && this.inv.length > 0){
+			        combat(this,player,"melee");
+			        return false;
 		        }
 		        else if(grid[(prevLoc - 10)].character !== player) {
 					if(this.checkAvailability('left')){
@@ -436,6 +449,10 @@ enemy = function(x,y,symbol,desc){
 			        combat(this,player,"unarmed");
 			        return false;
 		        }
+		        if(grid[(prevLoc + 1)].character == player && this.inv.length > 0){
+			        combat(this,player,"melee");
+			        return false;
+		        }
 		        else if(grid[(prevLoc + 1)].character !== player) {
 					if(this.checkAvailability('down')){
 						this.y ++;
@@ -458,6 +475,10 @@ enemy = function(x,y,symbol,desc){
 			  //console.log("Can't do that!");
 			  	if(grid[(prevLoc + 10)].character == player && this.inv.length == 0){
 			        combat(this,player,"unarmed");
+			        return false;
+		        }
+		        if(grid[(prevLoc + 10)].character == player && this.inv.length > 0){
+			        combat(this,player,"melee");
 			        return false;
 		        }
 		        else if(grid[(prevLoc + 10)].character !== player) {
@@ -491,12 +512,32 @@ enemy = function(x,y,symbol,desc){
 		}
 		if(player.alive == true && this.alive == true && this.stall <= 0){
 			this.turnBuffer = 15-this.limbs.parts.length;
+
+
 			for(i=0;i<this.limbs.parts.length;i++){
 				if(this.limbs.parts[i].status == "broken"){
 					this.turnBuffer ++;
 				}
 			}
-			if(player.x < this.x){
+			for(i=0;i<grid[(this.y*10)+this.x].items.length;i++){
+				if(grid[(this.y*10)+this.x].items[i].desc == 'weapon'){
+					History.innerHTML += this.name + " picked up " + grid[(this.y*10)+this.x].items[i].name + ".<br>";
+					this.inv.push(grid[(this.y*10)+this.x].items[i]);
+					grid[(this.y*10)+this.x].items.splice(i,1);
+					this.turnTaken = 1;
+				}
+			}
+			if(this.wield == 0 && this.inv.length > 0 && this.turnTaken == 0){
+				this.wield = this.inv[this.inv.length - 1];
+				this.turnTaken = 1;
+				History.innerHTML += this.name + " wielded " + this.wield.name + ".<br>";
+			}
+			if(this.turnTaken == 1){
+				console.log("took a turn");
+				this.turnTaken = 0;
+			}
+
+			else if(player.x < this.x){
 				if(this.checkAvailability('left')){
 					this.x --;
 			        prevLoc = ((this.y*10) + this.x);
@@ -554,6 +595,6 @@ robot.constructStandardRobot();
 entities.push(robot);**/
 
 
-var weapon = new item(1,1,"/","weapon");
+var weapon = new item(5,4,"/","weapon");
 weapon.type = "sharp";
 weapon.name = "knife";

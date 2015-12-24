@@ -193,21 +193,21 @@ combat = function(fighter, defender,style){
 			fighter.melee.currentxp += chance/100;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
-			History.innerHTML += "<span id='combat'>" + fighter.name + " cut " + defender.name + "'s " + hurtPart.name + " with " + player.wield.name + ".</span> <br>";
+			History.innerHTML += "<span id='combat'>" + fighter.name + " cut " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + ".</span> <br>";
 			hurtPart.status = "cut";	
 		}
 		else if(determineChance <= chance && hurtPart.status == "cut"){
 			fighter.melee.currentxp += chance/50;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
-			History.innerHTML += "<span id='combatWound'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with " + player.wield.name + ". <br>";
+			History.innerHTML += "<span id='combatWound'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + ". <br>";
 			hurtPart.status = "wounded";
 		}
 		else if(determineChance <= chance && hurtPart.status == "wounded"){
 			fighter.melee.currentxp += chance/25;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
-			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " sliced off " + defender.name + "'s " + hurtPart.name + " with " + player.wield.name + "! <br>";
+			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " sliced " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + "! <br>";
 			hurtPart.status = "sliced";
 			defender.bleed(fighter, 2);
 			defender.gib(hurtPart);

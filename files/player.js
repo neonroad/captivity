@@ -158,9 +158,12 @@ document.body.onkeydown = function(event){
                     grid[(player.y*10)+player.x].items.splice(i,1);
                     turn++;
                     player.checkBrokenBones();
+                    //update();
                     if(player.wield == 0 && player.grasp > 0){
                       if(confirm("Wield " + player.inv[player.inv.length-1].name + "?")){
                         player.wield = player.inv[player.inv.length-1];
+                        turn++;
+                        update();
                       }
                     }
                   }
@@ -171,7 +174,7 @@ document.body.onkeydown = function(event){
               }
             }
             for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){
-              History.innerHTML += "You stand atop " + grid[(player.y*10)+player.x].items[t].desc + "<br>";
+              History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].items[t].desc + "<br>";
             }
         }
       }
