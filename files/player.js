@@ -152,7 +152,7 @@ document.body.onkeydown = function(event){
             else if (map[188]){ //pick up
               map[event.keyCode] = false;
               for(i=0;i<grid[(player.y*10)+player.x].items.length;i++){
-                if(grid[(player.y*10)+player.x].items[i].desc == 'weapon'){
+                if(grid[(player.y*10)+player.x].items[i].desc == 'weapon' && player.grasp > 0){
                   if(confirm('Pick up ' + grid[(player.y*10)+player.x].items[i].name + "?")){
                     player.inv.push(grid[(player.y*10)+player.x].items[i]);
                     grid[(player.y*10)+player.x].items.splice(i,1);
@@ -171,10 +171,14 @@ document.body.onkeydown = function(event){
 
                   }
                 }
+                else if(player.grasp <= 0){
+                  History.innerHTML += "You can't pick anything up anymore.<br>";
+                }
               }
             }
             for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){
               History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].items[t].desc + "<br>";
+              History.legible ++;
             }
         }
       }

@@ -15,11 +15,13 @@ enemy = function(x,y,symbol,desc){
 	this.turnBuffer = 0;
 	this.stall = 0;
 	this.wield = 0;
-
+	this.grasp = 0;
+	this.sight = 5;
 	this.limbs.torso = new health('healthy');
 	this.limbs.torso.name = 'torso';
 	this.limbs.parts.push(this.limbs.torso);
-
+	this.target = player;
+	entities.push(this);
 	this.constructStandardRobot = function(){
 		this.limbs.torso.neck = new health('healthy');
 		this.limbs.torso.neck.name = 'neck';
@@ -73,7 +75,7 @@ enemy = function(x,y,symbol,desc){
 		this.limbs.lLeg.foot.name = 'left foot';
 		this.limbs.parts.push(this.limbs.lLeg.foot);
 	}
-
+	this.constructStandardRobot();
 	this.skills = new Object;
 	this.generateSkills = function(){
 		this.unarmed = new skill('unarmed',5,1);
@@ -276,7 +278,7 @@ enemy = function(x,y,symbol,desc){
 			for(f=0;f<force;f++){
 				if(direction !== undefined){
 					for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-						if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+						if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
 							//console.log(part.name + " IS GONNA BUG OUT");
 							grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
 							grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
@@ -284,7 +286,7 @@ enemy = function(x,y,symbol,desc){
 					}
 					if(grid[(giblet.y*10) + giblet.x +(dirNum*-1)].desc !== 'floor'){
 						for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-							if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+							if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
 								//console.log(part.name + " IS GONNA BUG OUT");
 								grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
 								grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
@@ -297,7 +299,7 @@ enemy = function(x,y,symbol,desc){
 						giblet.y = giblet.y + dirAdvY;
 						grid[(giblet.y*10) + giblet.x].items.push(giblet);
 						for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-							if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+							if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
 								//console.log("destroy");
 								grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
 								grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
@@ -311,7 +313,7 @@ enemy = function(x,y,symbol,desc){
 				
 			}
 			for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-				if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+				if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
 					//console.log(part.name + " IS GONNA BUG OUT");
 					grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
 					grid[(giblet.y*10) + giblet.x].colorIn(3,9,2);
@@ -503,6 +505,20 @@ enemy = function(x,y,symbol,desc){
 			corpse = new item(this.x,this.y, "%", 'corpse');
 			corpse.color = '<span style="background-color:#A0A0A0";>' +corpse.symbol+ "</span>";
 			grid[((this.y*10) + this.x)].character = null;
+			if(this.wield !== 0){
+				for(y=0;y<this.inv.length;y++){
+					if(this.inv[y] = this.wield){
+						this.inv.splice(y,1);
+					}
+				}
+				grid[(this.y *10) + this.x].items.push(this.wield);
+				this.wield = 0;
+			}
+			for(f=0;f<this.inv.length;f++){
+				grid[(this.y *10) + this.x].items.push(this.inv[f]);
+			}
+			this.inv = [];
+
 
 		}
 		this.stall --;
@@ -510,34 +526,65 @@ enemy = function(x,y,symbol,desc){
 		if(this.turnBuffer > 0 && this.stall <= 0){
 			this.stall = this.turnBuffer;
 		}
+		//this.target = this;
+		/**for(r=0;r<this.sight*this.sight;r++){//range of sight?
+			for(d=0;d<this.sight;d++){
+				if(grid[(this.y*10)+this.x-d].character !== null && grid[(this.y*10)+this.x-d].character.desc !== "Robot"){
+					this.target = grid[(this.y*10)+this.x-d].character;
+				}
+				else if(grid[(this.y*10)+this.x-d].items.length !== 0 && grid[(this.y*10)+this.x-d].items[grid[(this.y*10)+this.x-d].items.length-1].desc == "weapon"){
+					this.target = grid[(this.y*10)+this.x-d].items[grid[(this.y*10)+this.x-d].items.length - 1];
+				}
+
+			}
+		}**/
 		if(player.alive == true && this.alive == true && this.stall <= 0){
 			this.turnBuffer = 15-this.limbs.parts.length;
 
-
+			this.grasp = 0;
 			for(i=0;i<this.limbs.parts.length;i++){
+			
 				if(this.limbs.parts[i].status == "broken"){
 					this.turnBuffer ++;
 				}
+				if(this.limbs.parts[i].name == "right claw" || this.limbs.parts[i].name == "left claw"){
+					this.grasp ++;
+				}
 			}
+
+			if(this.grasp <= 0){
+				//console.log("butter fingers");
+				if(this.wield !== 0){
+					for(y=0;y<this.inv.length;y++){
+						if(this.inv[y] = this.wield){
+							this.inv.splice(y,1);
+						}
+					}
+					grid[(this.y *10) + this.x].items.push(this.wield);
+					this.wield = 0;
+				}
+			}
+
 			for(i=0;i<grid[(this.y*10)+this.x].items.length;i++){
-				if(grid[(this.y*10)+this.x].items[i].desc == 'weapon'){
+				if(grid[(this.y*10)+this.x].items[i].desc == 'weapon' && this.grasp > 0){
 					History.innerHTML += this.name + " picked up " + grid[(this.y*10)+this.x].items[i].name + ".<br>";
 					this.inv.push(grid[(this.y*10)+this.x].items[i]);
 					grid[(this.y*10)+this.x].items.splice(i,1);
 					this.turnTaken = 1;
 				}
 			}
-			if(this.wield == 0 && this.inv.length > 0 && this.turnTaken == 0){
+			if(this.wield == 0 && this.inv.length > 0 && this.turnTaken == 0 && this.grasp > 0){
 				this.wield = this.inv[this.inv.length - 1];
 				this.turnTaken = 1;
 				History.innerHTML += this.name + " wielded " + this.wield.name + ".<br>";
 			}
 			if(this.turnTaken == 1){
-				console.log("took a turn");
+				//console.log("took a turn");
 				this.turnTaken = 0;
 			}
 
-			else if(player.x < this.x){
+
+			else if(this.target.x < this.x){
 				if(this.checkAvailability('left')){
 					this.x --;
 			        prevLoc = ((this.y*10) + this.x);
@@ -545,7 +592,7 @@ enemy = function(x,y,symbol,desc){
 			        grid[prevLoc+1].character = null;    
 				}
 			}
-			else if(player.y < this.y){
+			else if(this.target.y < this.y){
 				if(this.checkAvailability('up')){
 					this.y --;
 			        prevLoc = ((this.y*10) + this.x);
@@ -553,7 +600,7 @@ enemy = function(x,y,symbol,desc){
 			        grid[prevLoc+10].character = null;    
 				}
 			}
-			else if(player.x > this.x){
+			else if(this.target.x > this.x){
 				if(this.checkAvailability('right')){
 					this.x ++;
 			        prevLoc = ((this.y*10) + this.x);
@@ -561,7 +608,7 @@ enemy = function(x,y,symbol,desc){
 			        grid[prevLoc-1].character = null;    
 				}
 			}
-			else if(player.y > this.y){
+			else if(this.target.y > this.y){
 				if(this.checkAvailability('down')){
 					this.y ++;
 			        prevLoc = ((this.y*10) + this.x);
@@ -579,22 +626,15 @@ enemy = function(x,y,symbol,desc){
 
 
 var robot = new enemy(5,5, "Θ",'Robot');
-robot.constructStandardRobot();
-entities.push(robot);
-/**
+
 var robot = new enemy(4,8, "Θ",'Robot');
-robot.constructStandardRobot();
-entities.push(robot);
 
 var robot = new enemy(1,5, "Θ",'Robot');
-robot.constructStandardRobot();
-entities.push(robot);
 
 var robot = new enemy(8,1, "Θ",'Robot');
-robot.constructStandardRobot();
-entities.push(robot);**/
 
 
-var weapon = new item(5,4,"/","weapon");
+var weapon = new item(5,2,"/","weapon");
 weapon.type = "sharp";
 weapon.name = "knife";
+weapon.value = 2;

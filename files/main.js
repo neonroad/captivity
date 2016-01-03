@@ -354,7 +354,7 @@ player.gib = function(part, force){
       for(f=0;f<force;f++){
         if(direction !== undefined){
           for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-            if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+            if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
               //console.log(part.name + " IS GONNA BUG OUT");
               grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
               grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
@@ -362,7 +362,7 @@ player.gib = function(part, force){
           }
           if(grid[(giblet.y*10) + giblet.x +(dirNum*-1)].desc !== 'floor'){
             for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
                 //console.log(part.name + " IS GONNA BUG OUT");
                 grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
                 grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
@@ -375,7 +375,7 @@ player.gib = function(part, force){
             giblet.y = giblet.y + dirAdvY;
             grid[(giblet.y*10) + giblet.x].items.push(giblet);
             for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
                 //console.log("destroy");
                 grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
                 grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
@@ -389,7 +389,7 @@ player.gib = function(part, force){
         
       }
       for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-        if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] = giblet){
+        if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
           //console.log(part.name + " IS GONNA BUG OUT");
           grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
           grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
@@ -474,13 +474,18 @@ player.checkBrokenBones = function(){
     if(player.limbs.parts[h].status == "broken"){
       turnBuffer += 1;
     }
-    if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "right hand") && player.limbs.parts[h].status !== "broken"){
+    if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "left hand") && player.limbs.parts[h].status !== "broken"){
       player.grasp ++;
     }
     
   }
   if(player.grasp == 0){
     if(player.wield !== 0){
+        for(y=0;y<player.inv.length;y++){
+          if(player.inv[y] = player.wield){
+            player.inv.splice(y,1);
+          }
+        }
         grid[(player.y *10) + player.x].items.push(player.wield);
         player.wield = 0;
     }
@@ -509,6 +514,17 @@ player.update = function(){
 
 
 var entities = [];
+entities.killAll = function(){
+  for(e=0;e<entities.length;e++){
+    entities[e].alive = 0;
+  }
+  console.log("Killed all entities.");
+}
+entities.gibAll = function(){ //hehe this one is fun and glitchy
+  for(e=0;e<entities.length;e++){
+    entities[e].gib(entities[e].limbs.parts[1]);
+  }
+}
 
 drawGraph = function(){
   graph.innerHTML = "";
