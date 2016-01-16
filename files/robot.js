@@ -218,7 +218,7 @@ enemy = function(x,y,symbol,desc){
 
 			}
 			if(force == undefined){
-				force = randomGen(2,8);
+				force = randomGen(2,3);
 			}
 			giblet = new item(this.x,this.y,this.partSymbol,part.name);
 			grid[(this.y*10) + this.x].colorIn(3,9,0);
@@ -625,16 +625,15 @@ enemy = function(x,y,symbol,desc){
 }
 
 
-var robot = new enemy(5,5, "Θ",'Robot');
-
-var robot = new enemy(4,8, "Θ",'Robot');
-
 var robot = new enemy(1,5, "Θ",'Robot');
-
-var robot = new enemy(8,1, "Θ",'Robot');
 
 
 var weapon = new item(5,2,"/","weapon");
 weapon.type = "sharp";
 weapon.name = "knife";
+weapon.value = 2;
+
+var weapon = new item(7,2,"¬","weapon");
+weapon.type = "gun";
+weapon.name = "laser pistol";
 weapon.value = 2;

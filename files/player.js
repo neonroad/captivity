@@ -1,7 +1,7 @@
 //Here we go.
 //saveTile = grid[((player.y*10) + player.x)];
 
-var map = {37: false, 38: false, 39: false, 40:false, 190:false, 188:false};
+var map = {37: false, 38: false, 39: false, 40:false, 190:false, 188:false, 70:false};
 document.body.onkeydown = function(event){
     if(debounce == 0){
       debounce = 1;
@@ -102,21 +102,27 @@ document.body.onkeydown = function(event){
       }
       event = event || window.event;
       var keycode = event.charCode || event.keyCode;
-      if (event.keyCode in map && player.alive == true) {
+      if (event.keyCode in map && player.alive == true && pause == 0) {
         map[event.keyCode] = true;
-         if((map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188]) ||
-            (!map[37] && map[38] && !map[39] && !map[40] && !map[190] && !map[188]) ||
-            (!map[37] && !map[38] && map[39] && !map[40] && !map[190] && !map[188]) ||
-            (!map[37] && !map[38] && !map[39] && map[40] && !map[190] && !map[188]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && map[190] && !map[188]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && map[188])) {
+         if((map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70]) ||
+            (!map[37] && map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70]) ||
+            (!map[37] && !map[38] && map[39] && !map[40] && !map[190] && !map[188] && !map[70]) ||
+            (!map[37] && !map[38] && !map[39] && map[40] && !map[190] && !map[188] && !map[70]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && map[190] && !map[188] && !map[70]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && map[188] && !map[70]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && map[70])) {
             if (map[37]) {
-                if(checkAvailability("left")){
+                if(checkAvailability("left") && player.aiming !== 1){
                   turn++;
                   player.x --;
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc+1].character = null;
+                }
+                else if(player.aiming == 1){
+                  History.innerHTML += "Left. <br>";
+                  player.fireAt('left');
+                  turn++;
                 }
             } 
             else if (map[38]) {
@@ -147,6 +153,7 @@ document.body.onkeydown = function(event){
                 }  
             }
             else if (map[190]){
+              player.checkBrokenBones();
               turn++;
             }
             else if (map[188]){ //pick up
@@ -174,6 +181,15 @@ document.body.onkeydown = function(event){
                 else if(player.grasp <= 0){
                   History.innerHTML += "You can't pick anything up anymore.<br>";
                 }
+              }
+            }
+            else if (map[70]){ // fire
+              if(player.wield.type == "gun"){
+                History.innerHTML += "Aiming... (Which direction will you shoot?): ";
+                player.aiming = 1;
+              }
+              else{
+                History.innerHTML += "You have nothing to fire.<br>";
               }
             }
             for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){

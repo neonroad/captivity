@@ -8,7 +8,23 @@ turnBuffer= 1;
 turn = 0;
 pastTurn = turn;
 
+pause = 0;
+
+fps = 25;
+
 var grid = [];
+
+projectile = function(x, y, direction, color){
+  this.x = x;
+  this.y = y;
+  this.symbol = "╬";
+  this.color = color;
+  this.exists = 1;
+  if(direction == 'left' || direction == 'right'){
+    this.symbol = "═";
+  }
+  this.symbol ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
+}
 
 point = function(x,y,symbol,desc){
   this.x = x;
@@ -17,17 +33,18 @@ point = function(x,y,symbol,desc){
   this.character = null;
   this.desc = desc;
   this.items = [];
+  this.projectile = null;
   this.color = "~";
   this.colorIn = function(constant, changing, version){
     color = randomGen(changing,1);
     if(version == 1){
-      color = '<span style="background-color:#'+color+constant+color+constant+color+constant+';"">'+symbol+'</span>';
+      color = '<span style="background-color:#'+color+constant+color+constant+color+constant+';"">'+this.symbol+'</span>';
     }
     else if(version == 2){
-      color = '<span style="background-color:#'+constant+color+color+color+color+color+';"">'+symbol+'</span>';
+      color = '<span style="background-color:#'+constant+color+color+color+color+color+';"">'+this.symbol+'</span>';
     }
     else{
-      color = '<span style="background-color:#'+constant +color+constant+color+constant +color+';"">'+symbol+'</span>';
+      color = '<span style="background-color:#'+constant +color+constant+color+constant +color+';"">'+this.symbol+'</span>';
     }
     this.color = color;
   }
@@ -68,7 +85,7 @@ health = function(status){
 }
 
 //Create player
-var player = new point(1,1,"@",'player');
+var player = new point(6,1,"@",'player');
 player.color = "@";
 player.name = "Player";
 player.limbs = new Object;
@@ -76,6 +93,7 @@ player.limbs.parts = [];
 player.alive = true;
 player.inv = [];
 player.wield = 0;
+player.aiming = 0;
 player.blind = 0;
 player.createLimbs = function(){
   player.limbs.head = new health('healthy');
@@ -156,8 +174,9 @@ player.createLimbs();
 player.skills = new Object;
 player.generateSkills = function(){
   player.dodging = new skill('dodging',1,1);
-  player.unarmed = new skill('unarmed',100,1);
+  player.unarmed = new skill('unarmed',1,1);
   player.melee = new skill('melee',1,1);
+  player.armed = new skill('armed',1,1);
 }
 player.generateSkills();
 
@@ -294,7 +313,7 @@ player.gib = function(part, force){
 
       }
       if(force == undefined){
-        force = randomGen(2,8);
+        force = randomGen(2,3);
       }
       giblet = new item(this.x,this.y,this.partSymbol,part.name);
       grid[(this.y*10) + this.x].colorIn('C',4,2);
@@ -492,6 +511,39 @@ player.checkBrokenBones = function(){
   }
 }
 
+player.fireAt = function(direction){
+  pause = 1;
+  if(direction == 'left'){
+    player.aiming = 0;
+    friendlyBullet = new projectile(player.x-1,player.y,direction, '#00FF00');
+    friendlyBullet.distance = 0;
+    grid[(player.y*10)+player.x-1].projectile = friendlyBullet;
+    //clearInterval(timer);
+    while(friendlyBullet.exists == 1){
+      if(grid[(friendlyBullet.y*10)+friendlyBullet.x].character !== null || grid[(friendlyBullet.y*10)+friendlyBullet.x].desc !== 'floor'){
+        friendlyBullet.exists = 0;
+        pause = 0;
+        if(grid[(friendlyBullet.y*10)+friendlyBullet.x].desc !== 'floor'){
+          grid[(friendlyBullet.y*10)+friendlyBullet.x].symbol = "#";
+          //grid[(friendlyBullet.y*10)+friendlyBullet.x].color = '<span style="background-color:#00AA00;"">'+grid[(friendlyBullet.y*10)+friendlyBullet.x].symbol+'</span>';
+          grid[(friendlyBullet.y*10)+friendlyBullet.x].colorIn(6,9,1);
+        }
+        else if(grid[(friendlyBullet.y*10)+friendlyBullet.x].character !== null){
+          combat(player, grid[(friendlyBullet.y*10)+friendlyBullet.x].character, player.wield.type, friendlyBullet.distance); //on HIT
+        }
+        grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = null;
+      }
+      else{
+        grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = null;
+        friendlyBullet.x --;
+        grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = friendlyBullet;
+        friendlyBullet.distance ++;
+      }
+    }
+    fps = 25;
+  }
+  History.legible ++;
+}
 
 player.update = function(){
   //player.checkBrokenBones();
@@ -562,7 +614,7 @@ updateGraph = function(condition){
   var counter = 0;
   for(y=0;y<10; y++){
     for(i=0;i<10;i++){
-      if(condition == 'blind'){
+      /**if(condition == 'blind'){
         rand = randomGen(0,player.blind*2);
         if(rand == 3){
           graph.innerHTML += grid[counter].color = "<span style='background-color:#000000';>?</span>";
@@ -571,9 +623,13 @@ updateGraph = function(condition){
           if(grid[counter].character != null){
             graph.innerHTML += grid[counter].character.color;
           }
+          else if(grid[counter].projectile != null){
+            graph.innerHTML += grid[counter].projectile.symbol;
+          }
           else if(grid[counter].items.length != 0){
             graph.innerHTML += grid[counter].items[grid[counter].items.length -1].color;
           }
+
 
           else{
             graph.innerHTML += grid[counter].color; //View as NORMAL
@@ -581,10 +637,13 @@ updateGraph = function(condition){
         }
         
         counter++;
-      }
-      else{
+      }**/
+      if(true){
         if(grid[counter].character != null){
           graph.innerHTML += grid[counter].character.color;
+        }
+        else if(grid[counter].projectile != null){
+          graph.innerHTML += grid[counter].projectile.symbol;
         }
         else if(grid[counter].items.length != 0){
           graph.innerHTML += grid[counter].items[grid[counter].items.length -1].color;
@@ -657,7 +716,7 @@ update = function(){
 //update();
 
 
-setInterval(function(){
+var timer = setInterval(function(){
   for(x=0;x<turnBuffer;x++){
     update();
   }

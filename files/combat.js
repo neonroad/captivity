@@ -1,4 +1,4 @@
-combat = function(fighter, defender,style){
+combat = function(fighter, defender,style, distance){ //distance is used mainly for ARMED combat. Leave blank if unnecessary.
 	//UNARMED COMBAT
 	var hasEyes = 0;
 	if(style == "unarmed"){
@@ -25,7 +25,7 @@ combat = function(fighter, defender,style){
 				hasEyes = 1;
 			}
 			if(hasEyes = 0){
-				chance*=0.1;
+				chance*=0.15;
 			}
 		}
 
@@ -155,7 +155,7 @@ combat = function(fighter, defender,style){
 
 	}
 	//MELEE COMBAT
-	else if(style == "melee"){
+	else if(style == "melee" && fighter.wield.type == "sharp"){
 		chance = Math.floor((((fighter.melee.level / defender.dodging.level) * (0.95)* Math.random()) * 100))
 		//History.innerHTML += chance + "<br>";
 
@@ -176,7 +176,7 @@ combat = function(fighter, defender,style){
 				}
 			}
 			if(hasEyes = 0){
-				chance *= 0.5;
+				chance *= 0.20;
 			}
 		}
 
@@ -289,6 +289,140 @@ combat = function(fighter, defender,style){
 			defender.dodging.level = calcXP(defender.dodging.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combatMiss'>" + fighter.name + " tried to hit " + defender.name + "'s " + hurtPart.name + " with " + player.wield.name + ".</span> <br>";
+			//defender.bleed(fighter, 5);
+
+		}
+
+	}
+	else if(style == "gun"){
+		chance = Math.floor((((fighter.armed.level / defender.dodging.level) * (0.99 - (distance/10))* Math.random()) * 100))
+		console.log(chance + " d: " + distance);
+		//History.innerHTML += chance + "<br>";
+
+		//reduce with injuries
+		for(i=0;i<fighter.limbs.parts.length;i++){
+			hasEyes = 0;
+			if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
+				hasEyes = 1;
+				if(fighter.limbs.parts[i].status == "bruised"){
+					chance*=0.5;
+				}
+				else if(fighter.limbs.parts[i].status == "wounded"){
+					chance *=0.25;
+				}
+				else if(fighter.limbs.parts[i].status == "broken"){
+					chance *= 0.05;
+					//console.log(chance);
+				}
+			}
+			if(fighter.desc == 'Robot'){
+				hasEyes = 1;
+			}
+			if(hasEyes = 0){
+				chance*=0.1;
+			}
+		}
+
+		determineChance = randomGen(0,100);
+
+		hitChance = randomGen(0,defender.limbs.parts.length);
+		
+		//console.log(preference);
+		
+		hurtPart = defender.limbs.parts[hitChance]; //what the fighter will HIT
+
+
+		if(determineChance <= chance && hurtPart.status == "healthy"){
+			fighter.unarmed.currentxp += chance/100;
+			fighter.unarmed.level = calcXP(fighter.unarmed.currentxp);
+			History.legible += 1;
+			History.innerHTML += "<span id='combat'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with a shot from their " + fighter.wield.name + ".</span> <br>";
+			hurtPart.status = "wounded";	
+		}
+		else if(determineChance <= chance && hurtPart.status == "wounded"){
+			fighter.unarmed.currentxp += chance/25;
+			fighter.unarmed.level = calcXP(fighter.unarmed.currentxp);
+			History.legible += 1;
+			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " shot through " + defender.name + "'s " + hurtPart.name + " with a shot from their " + fighter.wield.name + "! <br>";
+			hurtPart.status = "shot";
+			defender.bleed(fighter, 2);
+			if(hurtPart.name == "head" || hurtPart.name == "neck" || hurtPart.name == "torso"){
+				defender.alive = false;
+			}
+			if(hurtPart.name == "right upper arm"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "right lower arm" || defender.limbs.parts[g].name == "right hand" || defender.limbs.parts[g].name == "right claw"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "right lower arm"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "right hand" || defender.limbs.parts[g].name == "right claw"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "left upper arm"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "left lower arm" || defender.limbs.parts[g].name == "left hand"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "left lower arm"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "left hand" || defender.limbs.parts[g].name == "left claw"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "right upper leg"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "right foot" || defender.limbs.parts[g].name == "right lower leg"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "right lower leg"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "right foot"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "left upper leg"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "left foot" || defender.limbs.parts[g].name == "left lower leg"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			if(hurtPart.name == "left lower leg"){
+				for(g=0;g<defender.limbs.parts.length;g++){
+					if(defender.limbs.parts[g].name == "left foot"){
+						defender.limbs.parts[g].status = "broken";
+						//defender.limbs.parts.splice(g,1);
+					}
+				}
+			}
+			//defender.limbs.parts.splice(hitChance,1);
+		}
+		else if(determineChance <= chance && hurtPart.status == "broken"){
+			combat(fighter,defender,style);
+		}
+		else{
+			defender.dodging.currentxp += chance/100;
+			defender.dodging.level = calcXP(defender.dodging.currentxp);
+			History.legible += 1;
+			History.innerHTML += "<span id='combatMiss'>" + fighter.name + " tried to hit " + defender.name + "'s " + hurtPart.name + " with a shot from their " + fighter.wield.name + ".</span> <br>";
 			//defender.bleed(fighter, 5);
 
 		}
