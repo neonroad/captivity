@@ -4,7 +4,14 @@ debounce = 0;
 History = document.getElementById("history");
 History.legible = 0;
 
-turnBuffer= 1;
+skillBox = document.getElementById("skills");
+
+invBox = document.getElementById("inventory");
+
+statusBox = document.getElementById("statusScreen");
+
+statusScreen = new Object();
+
 turn = 0;
 pastTurn = turn;
 
@@ -22,6 +29,9 @@ projectile = function(x, y, direction, color){
   this.exists = 1;
   if(direction == 'left' || direction == 'right'){
     this.symbol = "═";
+  }
+  else{
+    this.symbol = "║"
   }
   this.symbol ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
 }
@@ -86,7 +96,7 @@ health = function(status){
 
 //Create player
 var player = new point(6,1,"@",'player');
-player.color = "@";
+player.color = this.color = "<span style='background-color:#FFFFFF';>@</span>";;
 player.name = "Player";
 player.limbs = new Object;
 player.limbs.parts = [];
@@ -95,6 +105,7 @@ player.inv = [];
 player.wield = 0;
 player.aiming = 0;
 player.blind = 0;
+player.turnBuffer = 1;
 player.createLimbs = function(){
   player.limbs.head = new health('healthy');
   player.limbs.head.name = "head";
@@ -171,12 +182,16 @@ player.createLimbs = function(){
 }
 player.createLimbs();
 
-player.skills = new Object;
+player.skills = [];
 player.generateSkills = function(){
   player.dodging = new skill('dodging',1,1);
+  player.skills.push(player.dodging);
   player.unarmed = new skill('unarmed',1,1);
+  player.skills.push(player.unarmed);
   player.melee = new skill('melee',1,1);
-  player.armed = new skill('armed',1,1);
+  player.skills.push(player.melee);
+  player.armed = new skill('armed',1,9000);
+  player.skills.push(player.armed);
 }
 player.generateSkills();
 
@@ -278,6 +293,7 @@ player.bleed = function(source, level){
 
 player.gib = function(part, force){
     this.partSymbol = "~";
+    part.status = "sliced";
     if(part !== undefined){
       if(part.name == 'head' && this.alive == 1){
         this.alive = 0;
@@ -292,7 +308,7 @@ player.gib = function(part, force){
         }
         for(x=0;x<this.limbs.parts.length;x++){
           if(this.limbs.parts[x] == part){
-            this.limbs.parts.splice(x,1);
+            //this.limbs.parts.splice(x,1);
           }
         }
         return;
@@ -414,11 +430,11 @@ player.gib = function(part, force){
           grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
         }
       }
-      for(x=0;x<this.limbs.parts.length;x++){
-        if(this.limbs.parts[x] == part){
-          this.limbs.parts.splice(x,1);
-        }
-      }
+      // for(x=0;x<this.limbs.parts.length;x++){
+      //   if(this.limbs.parts[x] == part){
+      //     //this.limbs.parts.splice(x,1);
+      //   }
+      // }
       if(part.name == "right upper arm"){
         for(x=0;x<this.limbs.parts.length;x++){
           //console.log("hey");
@@ -485,16 +501,28 @@ player.gib = function(part, force){
 
   }
 
+
 player.checkBrokenBones = function(){
-  turnBuffer = 1;
+
+
+  player.turnBuffer = 1;
   player.grasp = 0;
-  turnBuffer = 19-player.limbs.parts.length;
+  player.turnBuffer = 19-player.limbs.parts.length;
   for(h=0;h<player.limbs.parts.length;h++){
-    if(player.limbs.parts[h].status == "broken"){
-      turnBuffer += 1;
+    if(player.limbs.parts[h].status == "broken" || player.limbs.parts[h].status == "sliced" || player.limbs.parts[h].status == "xshot"){
+      player.turnBuffer += 1;
     }
-    if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "left hand") && player.limbs.parts[h].status !== "broken"){
+    if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "left hand") && (player.limbs.parts[h].status !== "broken" || player.limbs.parts[h].status !== "sliced" || player.limbs.parts[h].status !== "xshot")){
       player.grasp ++;
+    }
+    if((player.limbs.parts[h].name == "right upper arm" || player.limbs.parts[h].name == "left upper arm" || player.limbs.parts[h].name == "left lower arm" || player.limbs.parts[h].name == "right lower arm") && (player.limbs.parts[h].status == "broken" || player.limbs.parts[h].status == "sliced" || player.limbs.parts[h].status == "xshot")){
+      player.grasp --;
+      /*for(k=0;k<player.limbs.parts.length;k++){
+        if(player.limbs.parts[k].name == "left lower arm" || player.limbs.parts[k].name == "right lower arm" || player.limbs.parts[k].name == "right hand" || player.limbs.parts[k].name == "left hand"){
+          player.limbs.parts[k].status = "broken";
+        }
+      }*/
+
     }
     
   }
@@ -513,11 +541,12 @@ player.checkBrokenBones = function(){
 
 player.fireAt = function(direction){
   pause = 1;
-  if(direction == 'left'){
+  History.legible ++;
+  fire = function(frontx, fronty){
     player.aiming = 0;
-    friendlyBullet = new projectile(player.x-1,player.y,direction, '#00FF00');
+    friendlyBullet = new projectile(frontx,fronty,direction, '#00FF00');
     friendlyBullet.distance = 0;
-    grid[(player.y*10)+player.x-1].projectile = friendlyBullet;
+    grid[(fronty*10)+frontx].projectile = friendlyBullet;
     //clearInterval(timer);
     while(friendlyBullet.exists == 1){
       if(grid[(friendlyBullet.y*10)+friendlyBullet.x].character !== null || grid[(friendlyBullet.y*10)+friendlyBullet.x].desc !== 'floor'){
@@ -535,14 +564,37 @@ player.fireAt = function(direction){
       }
       else{
         grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = null;
-        friendlyBullet.x --;
+        if(direction == 'left'){
+          friendlyBullet.x --;
+        }
+        else if(direction == 'up'){
+          friendlyBullet.y --;
+        }
+        else if(direction == 'right'){
+          friendlyBullet.x ++;
+        }
+        else if(direction == 'down'){
+          friendlyBullet.y ++;
+        }
         grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = friendlyBullet;
         friendlyBullet.distance ++;
       }
     }
     fps = 25;
   }
-  History.legible ++;
+  if(direction == 'left'){
+    fire(player.x-1,player.y);
+  }
+  else if(direction == 'up'){
+    fire(player.x, player.y-1);
+  }
+  else if(direction == 'right'){
+    fire(player.x+1, player.y);
+  }
+  else if(direction == 'down'){
+    fire(player.x, player.y+1);
+  }
+  
 }
 
 player.update = function(){
@@ -679,7 +731,158 @@ updateGraph = function(condition){
 drawGraph();
 updateGraph();
 
+log = "";
+
 update = function(){
+  statusScreen.draw = function(){
+    this.continue = 0;
+    //console.log("drawing...");
+    while(this.continue < 20){
+      for(h=0;h<player.limbs.parts.length;h++){
+        if(player.limbs.parts[h].name == 'head' && this.continue == 0){
+          this.sampleText =  "........╔═════╗..........<br>";
+          this.sampleText += "........║%%%%%║..........<br>";
+          this.sampleText += "........║%%%%%║..........<br>";
+          this.sampleText += "........╚═╦═╦═╝..........<br>";
+
+          statusString = this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase());    
+
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'neck' && this.continue == 1){
+          this.sampleText =  ".......╔══╩%╩══╗.........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase());   
+
+          this.continue ++; 
+        }
+        if(player.limbs.parts[h].name == 'right upper arm' && this.continue == 2){
+          this.sampleText =  "......╔╝%";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'torso' && this.continue == 3){
+          this.sampleText =  "║%%%║";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left upper arm' && this.continue == 4){
+          this.sampleText =  "%╚╗........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'right lower arm' && this.continue == 5){
+          this.sampleText =  "......║%╦";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'torso' && this.continue == 6){
+          this.sampleText =  "╝%%%╚";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left lower arm' && this.continue == 7){
+          this.sampleText =  "╦%║........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'right hand' && this.continue == 8){
+          this.sampleText =  "......║%%";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'torso' && this.continue == 9){
+          this.sampleText =  "║%%%║";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left hand' && this.continue == 10){
+          this.sampleText =  "%%║........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'torso' && this.continue == 11){
+          this.sampleText =  "......╚═╔╝%%%╚╗═╝........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'right upper leg' && this.continue == 12){
+          this.sampleText =  "........║%╔═";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left upper leg' && this.continue == 13){
+          this.sampleText =  "╗%║..........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'right lower leg' && this.continue == 14){
+          this.sampleText =  ".......╔╝%║.";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left lower leg' && this.continue == 15){
+          this.sampleText =  "║%╚╗.........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'right foot' && this.continue == 16){
+          this.sampleText =  "......╔╝%%║.";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left foot' && this.continue == 17){
+          this.sampleText =  "║%%╚╗........<br>";
+
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'right foot' && this.continue == 18){
+          this.sampleText =  "......╚═══╝.";  
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+        if(player.limbs.parts[h].name == 'left foot' && this.continue == 19){
+          this.sampleText =  "╚═══╝........<br>"; 
+          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
+          this.continue ++;
+        }
+
+      }      
+    }
+
+    // for(var s =0; s < statusString.length; s++){
+    //   if(statusString[s] == 's'){
+    //     console.log("yu");
+    //     statusString.replace(statusString[s], status);
+    //   }
+    // }
+    statusString = statusString.replace(/H/g,'<span id="combatMiss">H</span>');
+    statusString = statusString.replace(/I/g,'<span id="combat">I</span>');
+    statusString = statusString.replace(/C/g,'<span id="combat">C</span>');
+    statusString = statusString.replace(/W/g,'<span id="combatWound">W</span>');
+    statusString = statusString.replace(/B/g,'<span id="combatBreak">B</span>');
+    statusString = statusString.replace(/S/g,'<span id="combatBreak">S</span>');
+    statusString = statusString.replace(/X/g,'<span id="combatBreak">X</span>');
+    statusBox.innerHTML = statusString;
+  }
+
+  statusScreen.draw();
   if(player.name !== "dead"){
     player.update();
   }
@@ -701,9 +904,28 @@ update = function(){
     }
   }
   if(History.legible > 15){
-    History.innerHTML = "";
+    log += History.innerHTML;
+    History.innerHTML = "<span style='background-color:#6D6E5F'>[HISTORY]</span><br>";
     History.legible = 0;
   }
+
+  skillBox.innerHTML = "<span style='background-color:#497280'>[SKILLS]</span><br>";
+
+  invBox.innerHTML = "<span style='background-color:#826033'>[INVENTORY]</span><br>";
+
+  for(s=0;s<player.skills.length;s++){
+    skillBox.innerHTML += player.skills[s].name + ": " + player.skills[s].level + "<br>";
+    player.skills[s].level = calcXP(player.skills[s].currentxp);
+  }
+
+  for(i=0;i<player.inv.length;i++){
+    invBox.innerHTML += player.inv[i].name;
+    if(player.wield == player.inv[i]){
+      invBox.innerHTML += " (wielding)";
+    }
+    invBox.innerHTML += "<br>";
+  }
+
   /**if(player.blind > 0 && debounce == 0){
     debounce = 1;
     updateGraph("blind");
@@ -711,13 +933,14 @@ update = function(){
   else{
     updateGraph();
   } **/
+  //location.href = "#historyend";
   updateGraph();
 }
 //update();
 
 
 var timer = setInterval(function(){
-  for(x=0;x<turnBuffer;x++){
+  for(x=0;x<player.turnBuffer;x++){
     update();
   }
   pastTurn = turn;

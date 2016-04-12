@@ -6,16 +6,32 @@
   <title>This Won't Be Easy.</title>
 </head>
 <body>
-  <div id='gameGraph'></div>
-  <div style='font-family:Courier'>[HISTORY]
-  	<div id='history'>
+  <div id='background'>
+    <div id='gameGraph'></div>
 
-  	</div>
+    <div id='skills'>
+      <span style='background-color:#40B013'>[SKILLS]</span>
+    </div>
 
+    <div id='inventory'>
+      <span style='background-color:#40B013'>[INVENTORY]</span>
+    </div>
+    <div id="status" style='background-color:#40B013'>[STATUS]
+      <div id='statusScreen'>
+      </div>
+    </div>
+
+    <div style='font-family:Courier'>
+    	<div id='history'>
+        <span style='background-color:#6D6E5F'>[HISTORY]</span><br>
+    	</div>
+      <div id='historyend'></div>
+
+    </div>
   </div>
   <script type="text/javascript" src="main.js"></script>
   <script type="text/javascript" src="combat.js"></script>
   <script type="text/javascript" src="player.js"></script>
-  <script type="text/javascript" src="robot.js"></script>
+  <script type="text/javascript" src="robot.js"></script> 
 </body>
 </html>

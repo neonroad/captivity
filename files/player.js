@@ -18,7 +18,7 @@ document.body.onkeydown = function(event){
               combat(player,grid[(prevLoc + 1)].character,"unarmed");
               turn++;
             }
-            else if(grid[(prevLoc + 1)].character !== null && player.wield !== 0){
+            else if(grid[(prevLoc + 1)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 1)].character,"melee");
               turn++;
@@ -40,7 +40,7 @@ document.body.onkeydown = function(event){
               combat(player,grid[(prevLoc + 10)].character,"unarmed");
               turn++;
             }
-            else if(grid[(prevLoc + 10)].character !== null && player.wield !== 0){
+            else if(grid[(prevLoc + 10)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 10)].character,"melee");
               turn++;
@@ -63,7 +63,7 @@ document.body.onkeydown = function(event){
               combat(player,grid[(prevLoc -1)].character,"unarmed");
               turn++;
             }
-            else if(grid[(prevLoc - 1)].character !== null && player.wield !== 0){
+            else if(grid[(prevLoc - 1)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc - 1)].character,"melee");
               turn++;
@@ -85,7 +85,7 @@ document.body.onkeydown = function(event){
               combat(player,grid[(prevLoc - 10)].character,"unarmed");
               turn++;
             }
-            else if(grid[(prevLoc - 10)].character !== null && player.wield !== 0){
+            else if(grid[(prevLoc - 10)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc - 10)].character,"melee");
               turn++;
@@ -126,31 +126,46 @@ document.body.onkeydown = function(event){
                 }
             } 
             else if (map[38]) {
-                if(checkAvailability("up")){
+                if(checkAvailability("up") && player.aiming !== 1){
                   turn++;
                   player.y --;
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc+10].character = null;
                 }
+                else if(player.aiming == 1){
+                  History.innerHTML += "Up. <br>";
+                  player.fireAt('up');
+                  turn++;
+                }
             } 
             else if (map[39]) {
-                if(checkAvailability("right")){
+                if(checkAvailability("right") && player.aiming !== 1){
                   turn++;
                   player.x ++;
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc-1].character = null;
                 }
+                else if(player.aiming == 1){
+                  History.innerHTML += "Right. <br>";
+                  player.fireAt('right');
+                  turn++;
+                }
             } 
             else if (map[40]) {
-                if(checkAvailability("down")){
+                if(checkAvailability("down") && player.aiming !== 1){
                   turn++;
                   player.y ++;
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc-10].character = null;
                 }  
+                else if(player.aiming == 1){
+                  History.innerHTML += "Down. <br>";
+                  player.fireAt('down');
+                  turn++;
+                }
             }
             else if (map[190]){
               player.checkBrokenBones();
@@ -184,17 +199,18 @@ document.body.onkeydown = function(event){
               }
             }
             else if (map[70]){ // fire
-              if(player.wield.type == "gun"){
+              if(player.wield.type == "gun" && player.aiming == 0){
                 History.innerHTML += "Aiming... (Which direction will you shoot?): ";
                 player.aiming = 1;
               }
               else{
-                History.innerHTML += "You have nothing to fire.<br>";
+                History.innerHTML += "You don't do anything.<br>";
+                player.aiming = 0;
               }
             }
             for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){
-              History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].items[t].desc + "<br>";
               History.legible ++;
+              History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].items[t].name + "<br>";
             }
         }
       }

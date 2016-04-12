@@ -78,9 +78,9 @@ enemy = function(x,y,symbol,desc){
 	this.constructStandardRobot();
 	this.skills = new Object;
 	this.generateSkills = function(){
-		this.unarmed = new skill('unarmed',5,1);
+		this.unarmed = new skill('unarmed',1,1);
 		this.dodging = new skill('dodging',1,1);
-		this.melee = new skill('melee',10,1);
+		this.melee = new skill('melee',1,1);
 	}
 	this.generateSkills();
 
@@ -518,6 +518,7 @@ enemy = function(x,y,symbol,desc){
 				grid[(this.y *10) + this.x].items.push(this.inv[f]);
 			}
 			this.inv = [];
+			this.turnBuffer = 0;
 
 
 		}
@@ -626,14 +627,18 @@ enemy = function(x,y,symbol,desc){
 
 
 var robot = new enemy(1,5, "Θ",'Robot');
-
+var robot = new enemy(1,5, "Θ",'Robot');
+var robot = new enemy(1,5, "Θ",'Robot');
 
 var weapon = new item(5,2,"/","weapon");
 weapon.type = "sharp";
 weapon.name = "knife";
 weapon.value = 2;
+weapon.color = "<span style='background-color:#636B5F';>"+weapon.symbol+"</span>";
 
 var weapon = new item(7,2,"¬","weapon");
 weapon.type = "gun";
 weapon.name = "laser pistol";
-weapon.value = 2;
+weapon.value = 3;
+weapon.damage = 1;
+weapon.color = "<span style='background-color:#636B5F';>"+weapon.symbol+"</span>";

@@ -1,11 +1,71 @@
+body{
+	background-color: #212738;
+}
+
+#background{
+	margin:auto;
+	border:5px solid black;
+	position: absolute;
+	background-color: #361F5E;
+}
+
 #gameGraph{
   font-family:'Courier';
+  width:96px;
+  height:180px;
+  display: inline-block;
+  background-color: #66658A;
+  overflow:hidden;
   
 }
-#history{
-	background-color:gray;
+
+#skills{
 	font-family:'Courier';
+	text-align: center;
+	overflow: hidden;
+	background-color: #6AB4CC;
+	display: inline-block;
+	height:180px;
+	width: 200px;
 }
+
+#inventory{
+	font-family:'Courier';
+	text-align: center;
+	overflow: hidden;
+	background-color: #D9A159;
+	display: inline-block;
+	height:180px;
+	width: 300px;
+}
+#status{
+	margin-bottom:-403px;
+	display: inline-block;
+	font-family:'Courier';
+	text-align: center;
+	overflow: hidden;
+	background-color: #235E36;
+	height:583px;
+	width: 300px;
+}
+#statusScreen{
+	margin:auto;
+	font-family:'Courier';
+	text-align: center;
+	overflow: hidden;
+	background-color: #235E36;
+	height:240px;
+	width: 250px;
+}
+
+#history{
+	background-color:#989987;
+	font-family:'Courier';
+	overflow: auto;
+	height:400px;
+	width: 604px;
+}
+
 #combat{
 	background-color:#F7A44A;
 }
