@@ -22,6 +22,7 @@ enemy = function(x,y,symbol,desc){
 	this.limbs.parts.push(this.limbs.torso);
 	this.target = player;
 	entities.push(this);
+
 	this.constructStandardRobot = function(){
 		this.limbs.torso.neck = new health('healthy');
 		this.limbs.torso.neck.name = 'neck';
@@ -85,99 +86,60 @@ enemy = function(x,y,symbol,desc){
 	this.generateSkills();
 
 	this.bleed = function(source, level){
-	  grid[((this.y * 10) + this.x)].colorIn(3,9,0);
-	  if(source.x > this.x){  //if they are to the RIGHT
-	    if(level <= 3){
-	      for(x=0;x<level +1;x++){
-	        distance = randomGen(0,1);
-	        locationB = randomGen(0,6);
-	        if(locationB == 1){
-	          grid[((this.y * 10) + this.x)+10 + distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 2){
-	          grid[((this.y * 10) + this.x)-1 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 3){
-	          grid[((this.y * 10) + this.x)-10 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 4){
-	          grid[((this.y * 10) + this.x)-11 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 5){
-	          grid[((this.y * 10) + this.x)+9 - distance].colorIn(3,9,2);
-	        }
-	      }
-	    } 
-	  }
-	  if(source.y<this.y){  //if they are ABOVE
-	    if(level <= 3){
-	      for(x=0;x<level +1;x++){
-	        distance = randomGen(0,1);
-	        locationB = randomGen(0,6);
-	        if(locationB == 1){
-	          grid[((this.y * 10) + this.x)+10 + distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 2){
-	          grid[((this.y * 10) + this.x)-1 - distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 3){
-	          grid[((this.y * 10) + this.x)+1 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 4){
-	          grid[((this.y * 10) + this.x)+11 - distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 5){
-	          grid[((this.y * 10) + this.x)+9 - distance].colorIn(3,9,2);
-	        }
-	      }
-	    } 
-	  }
-	  if(source.y>this.y){  //if they are BELOW
-	    if(level <= 3){
-	      for(x=0;x<level +1;x++){
-	        distance = randomGen(0,1);
-	        locationB = randomGen(0,6);
-	        if(locationB == 1){
-	          grid[((this.y * 10) + this.x)-10 + distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 2){
-	          grid[((this.y * 10) + this.x)-1 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 3){
-	          grid[((this.y * 10) + this.x)+1 - distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 4){
-	          grid[((this.y * 10) + this.x)-11 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 5){
-	          grid[((this.y * 10) + this.x)-9 - distance].colorIn(3,9,0);
-	        }
-	      }
-	    } 
-	  }
-	  if(source.x < this.x){  //if they are to the LEFT
-	    if(level <= 3){
-	      for(x=0;x<level +1;x++){
-	        distance = randomGen(0,1);
-	        locationB = randomGen(0,6);
-	        if(locationB == 1){
-	          grid[((this.y * 10) + this.x)+10 + distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 2){
-	          grid[((this.y * 10) + this.x)+1 - distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 3){
-	          grid[((this.y * 10) + this.x)-10 - distance].colorIn(3,9,2);
-	        }
-	        else if(locationB == 4){
-	          grid[((this.y * 10) + this.x)-9 - distance].colorIn(3,9,0);
-	        }
-	        else if(locationB == 5){
-	          grid[((this.y * 10) + this.x)+11 - distance].colorIn(3,9,2);
-	        }
-	      }
-	    } 
-	  }
+	  	grid[((source.y * 10) + source.x)].colorIn(3,9,0);
+		blood = new particle(source.x,source.y, '░','#E1F74F');
+		blood.step = 0;
+		blood.direction = randomGen(1,9)
+		blood.parent = source;
+		blood.update = function(){
+			this.step ++;
+			if(this.step < randomGen(1,10) && grid[(this.y * 10) + this.x].desc !== 'wall'){
+				checkList(grid[(this.y * 10) + this.x].particles, this);
+
+				switch(this.direction){
+					case 1:
+						this.x++;
+						break;
+					case 2:
+						this.x++;
+						this.y++;
+						break;
+					case 3:
+						this.y++;
+						break;
+					case 4:
+						this.x--;
+						this.y++;
+						break;
+					case 5:
+						this.x--;
+						break;
+					case 6:
+						this.x--;
+						this.y--;
+						break;
+					case 7:
+						this.y--;
+						break;
+					case 8:
+						this.x++;
+						this.y--;
+						break;
+				}
+				if((this.parent.alive == false || this.parent.alive == undefined) && this.step %2 == 0){
+					robot.bleed(this.parent);
+				}
+				grid[(this.y * 10) + this.x].particles.push(this);
+			}
+			else{
+				checkList(grid[(this.y * 10) + this.x].particles, this);
+				grid[((this.y * 10) + this.x)].colorIn(3,9,0);
+				checkList(particles, this);
+			}
+
+
+		}
+	  
 	}
 
 	this.gib = function(part, force){
@@ -204,6 +166,7 @@ enemy = function(x,y,symbol,desc){
 			if(part.name == 'torso'){
 				this.partSymbol = "¥";
 				this.alive = 0;
+				this.update();
 				for(x=0;x<this.limbs.parts.length;x++){
 					if(this.limbs.parts[x] == part){
 						//console.log('its the torso');
@@ -386,6 +349,7 @@ enemy = function(x,y,symbol,desc){
 				}
 			}
 			console.log('Gibbed ' + part.name);
+			this.bleed(giblet);
 		}
 
 	}
@@ -540,6 +504,7 @@ enemy = function(x,y,symbol,desc){
 			}
 		}**/
 		if(player.alive == true && this.alive == true && this.stall <= 0){
+			
 			this.turnBuffer = 15-this.limbs.parts.length;
 
 			this.grasp = 0;
@@ -617,17 +582,12 @@ enemy = function(x,y,symbol,desc){
 			        grid[prevLoc-10].character = null;    
 				}
 			}
-			
-
 		}
-		
 
 	}
+	this.update();
 }
 
-
-var robot = new enemy(1,5, "Θ",'Robot');
-var robot = new enemy(1,5, "Θ",'Robot');
 var robot = new enemy(1,5, "Θ",'Robot');
 
 var weapon = new item(5,2,"/","weapon");
@@ -642,3 +602,12 @@ weapon.name = "laser pistol";
 weapon.value = 3;
 weapon.damage = 1;
 weapon.color = "<span style='background-color:#636B5F';>"+weapon.symbol+"</span>";
+
+var weapon = new item(7,1,"¬","weapon");
+weapon.type = "gun";
+weapon.name = "minigun";
+weapon.value = 3;
+weapon.damage = 1;
+weapon.color = "<span style='background-color:#999B5F';>"+weapon.symbol+"</span>";
+
+update();

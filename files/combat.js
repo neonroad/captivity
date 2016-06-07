@@ -2,35 +2,36 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 	//UNARMED COMBAT
 	var hasEyes = 0;
 	if(style == "unarmed"){
-		chance = Math.floor((fighter.unarmed.level/defender.dodging.level) * (Math.sqrt(fighter.unarmed.level)));
+		//chance = Math.floor(((fighter.unarmed.level/defender.dodging.level) * (Math.sqrt(fighter.unarmed.level))) );
+		chance = randomGen(1,5 + fighter.turnBuffer - defender.turnBuffer);
 		console.log(chance);
 		//History.innerHTML += chance + "<br>";
 
 		//reduce with injuries
-		for(i=0;i<fighter.limbs.parts.length;i++){
-			hasEyes = 0;
-			if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
-				hasEyes = 1;
-				if(fighter.limbs.parts[i].status == "injured"){
-					chance*=0.75;
-				}
-				else if(fighter.limbs.parts[i].status == "wounded"){
-					chance *=0.5;
-				}
-				else if(fighter.limbs.parts[i].status == "broken"){
-					chance *= 0.25;
-					//console.log(chance);
-				}
-			}
-			if(fighter.desc == 'Robot'){
-				hasEyes = 1;
-			}
-			if(hasEyes = 0){
-				chance*=0.15;
-			}
-		}
+		// for(i=0;i<fighter.limbs.parts.length;i++){
+		// 	hasEyes = 0;
+		// 	if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
+		// 		hasEyes = 1;
+		// 		if(fighter.limbs.parts[i].status == "injured"){
+		// 			chance*=0.75;
+		// 		}
+		// 		else if(fighter.limbs.parts[i].status == "wounded"){
+		// 			chance *=0.5;
+		// 		}
+		// 		else if(fighter.limbs.parts[i].status == "broken"){
+		// 			chance *= 0.25;
+		// 			//console.log(chance);
+		// 		}
+		// 	}
+		// 	if(fighter.desc == 'Robot'){
+		// 		hasEyes = 1;
+		// 	}
+		// 	if(hasEyes = 0){
+		// 		chance*=0.15;
+		// 	}
+		// }
 
-		determineChance = randomGen(1,100);
+		determineChance = randomGen(1,5 + fighter.turnBuffer - defender.turnBuffer);
 
 		preference = []; //part to hit with
 		hitChance = randomGen(0,defender.limbs.parts.length);
@@ -52,7 +53,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 		hurtPart = defender.limbs.parts[hitChance]; //what the fighter will HIT
 
 
-		if(determineChance <= chance+10 && hurtPart.status == "healthy"){
+		if(determineChance == chance && hurtPart.status == "healthy"){
 			console.log(((chance+defender.dodging.level)/fighter.unarmed.level)+ " xp");
 			fighter.unarmed.currentxp += (chance+defender.dodging.level)/fighter.unarmed.level;
 			fighter.unarmed.level = calcXP(fighter.unarmed.currentxp);
@@ -60,14 +61,14 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			History.innerHTML += "<span id='combat'>" + fighter.name + " injured " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ".</span> <br>";
 			hurtPart.status = "injured";	
 		}
-		else if(determineChance <= chance+10 && hurtPart.status == "injured"){
+		else if(determineChance == chance && hurtPart.status == "injured"){
 			fighter.unarmed.currentxp += (chance+defender.dodging.level)/fighter.unarmed.level;
 			fighter.unarmed.level = calcXP(fighter.unarmed.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combatWound'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ". <br>";
 			hurtPart.status = "wounded";
 		}
-		else if(determineChance <= chance+10 && hurtPart.status == "wounded"){
+		else if(determineChance == chance && hurtPart.status == "wounded"){
 			fighter.unarmed.currentxp += (chance+defender.dodging.level)/fighter.unarmed.level;
 			fighter.unarmed.level = calcXP(fighter.unarmed.currentxp);
 			History.legible += 1;
@@ -147,7 +148,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			combat(fighter,defender,style);
 		}
 		else{
-			defender.dodging.currentxp += chance + (Math.sqrt(fighter.unarmed.level)/fighter.unarmed.level);
+			defender.dodging.currentxp += chance + (Math.sqrt(fighter.unarmed.level));
 			defender.dodging.level = calcXP(defender.dodging.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combatMiss'>" + fighter.name + " tried to hit " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ".</span> <br>";
@@ -158,31 +159,32 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 	}
 	//MELEE COMBAT
 	else if(style == "melee" && fighter.wield.type == "sharp"){
-		chance = Math.floor((((fighter.melee.level / defender.dodging.level) * (0.95)* Math.random()) * 100))
+		//chance = Math.floor((((fighter.melee.level / defender.dodging.level) * (0.95)* Math.random()) * 100))
+		chance = randomGen(1,3 + fighter.turnBuffer - defender.turnBuffer);
 		//History.innerHTML += chance + "<br>";
 
 		//reduce with injuries
-		for(i=0;i<fighter.limbs.parts.length;i++){
-			hasEyes = 0;
-			if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
-				hasEyes = 1;
-				if(fighter.limbs.parts[i].status == "injured" || fighter.limbs.parts[i].status == "cut"){
-					chance*=0.75;
-				}
-				else if(fighter.limbs.parts[i].status == "wounded"){
-					chance *=0.5;
-				}
-				else if(fighter.limbs.parts[i].status == "broken"){
-					chance *= 0.25;
-					//console.log(chance);
-				}
-			}
-			if(hasEyes = 0){
-				chance *= 0.20;
-			}
-		}
+		// for(i=0;i<fighter.limbs.parts.length;i++){
+		// 	hasEyes = 0;
+		// 	if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
+		// 		hasEyes = 1;
+		// 		if(fighter.limbs.parts[i].status == "injured" || fighter.limbs.parts[i].status == "cut"){
+		// 			chance*=0.75;
+		// 		}
+		// 		else if(fighter.limbs.parts[i].status == "wounded"){
+		// 			chance *=0.5;
+		// 		}
+		// 		else if(fighter.limbs.parts[i].status == "broken"){
+		// 			chance *= 0.25;
+		// 			//console.log(chance);
+		// 		}
+		// 	}
+		// 	if(hasEyes = 0){
+		// 		chance *= 0.20;
+		// 	}
+		// }
 
-		determineChance = randomGen(0,100);
+		determineChance = randomGen(1,3 + fighter.turnBuffer - defender.turnBuffer);
 
 		preference = []; //part to hit with
 		hitChance = randomGen(0,defender.limbs.parts.length);
@@ -191,21 +193,21 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 		hurtPart = defender.limbs.parts[hitChance]; //what the fighter will HIT
 
 
-		if(determineChance <= chance && hurtPart.status == "healthy"){
+		if(determineChance == chance && hurtPart.status == "healthy"){
 			fighter.melee.currentxp += chance/100;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combat'>" + fighter.name + " cut " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + ".</span> <br>";
 			hurtPart.status = "cut";	
 		}
-		else if(determineChance <= chance && hurtPart.status == "cut"){
+		else if(determineChance == chance && hurtPart.status == "cut"){
 			fighter.melee.currentxp += chance/50;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combatWound'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + ". <br>";
 			hurtPart.status = "wounded";
 		}
-		else if(determineChance <= chance && hurtPart.status == "wounded"){
+		else if(determineChance == chance && hurtPart.status == "wounded"){
 			fighter.melee.currentxp += chance/25;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
@@ -297,31 +299,33 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 
 	}
 	else if(style == "melee" && (fighter.wield.type == "blunt" || fighter.wield.type == "gun") ){
-		chance = Math.floor((((fighter.melee.level / defender.dodging.level) * (0.95)* Math.random()) * 100))
+		//chance = Math.floor((((fighter.melee.level / defender.dodging.level) * (0.95)* Math.random()) * 100))
+		chance = randomGen(1,3 + fighter.turnBuffer - defender.turnBuffer);
+
 		//History.innerHTML += chance + "<br>";
 
 		//reduce with injuries
-		for(i=0;i<fighter.limbs.parts.length;i++){
-			hasEyes = 0;
-			if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
-				hasEyes = 1;
-				if(fighter.limbs.parts[i].status == "injured" || fighter.limbs.parts[i].status == "cut"){
-					chance*=0.75;
-				}
-				else if(fighter.limbs.parts[i].status == "wounded"){
-					chance *=0.5;
-				}
-				else if(fighter.limbs.parts[i].status == "broken"){
-					chance *= 0.25;
-					//console.log(chance);
-				}
-			}
-			if(hasEyes = 0){
-				chance *= 0.20;
-			}
-		}
+		// for(i=0;i<fighter.limbs.parts.length;i++){
+		// 	hasEyes = 0;
+		// 	if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
+		// 		hasEyes = 1;
+		// 		if(fighter.limbs.parts[i].status == "injured" || fighter.limbs.parts[i].status == "cut"){
+		// 			chance*=0.75;
+		// 		}
+		// 		else if(fighter.limbs.parts[i].status == "wounded"){
+		// 			chance *=0.5;
+		// 		}
+		// 		else if(fighter.limbs.parts[i].status == "broken"){
+		// 			chance *= 0.25;
+		// 			//console.log(chance);
+		// 		}
+		// 	}
+		// 	if(hasEyes = 0){
+		// 		chance *= 0.20;
+		// 	}
+		// }
 
-		determineChance = randomGen(0,100);
+		determineChance = randomGen(1,3 + fighter.turnBuffer - defender.turnBuffer);
 
 		preference = []; //part to hit with
 		hitChance = randomGen(0,defender.limbs.parts.length);
@@ -330,21 +334,21 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 		hurtPart = defender.limbs.parts[hitChance]; //what the fighter will HIT
 
 
-		if(determineChance <= chance && hurtPart.status == "healthy"){
+		if(determineChance == chance && hurtPart.status == "healthy"){
 			fighter.melee.currentxp += chance/100;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combat'>" + fighter.name + " injured " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + ".</span> <br>";
 			hurtPart.status = "injured";	
 		}
-		else if(determineChance <= chance && hurtPart.status == "injured"){
+		else if(determineChance == chance && hurtPart.status == "injured"){
 			fighter.melee.currentxp += chance/50;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combatWound'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + ". <br>";
 			hurtPart.status = "wounded";
 		}
-		else if(determineChance <= chance && hurtPart.status == "wounded"){
+		else if(determineChance == chance && hurtPart.status == "wounded"){
 			fighter.melee.currentxp += chance/25;
 			fighter.melee.level = calcXP(fighter.melee.currentxp);
 			History.legible += 1;
@@ -425,35 +429,10 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 
 	}
 	else if(style == "gun"){
-		chance = Math.floor((((fighter.armed.level / defender.dodging.level) * (0.99 + defender.turnBuffer) * Math.random()) * 100))
-		//console.log(chance + " f: " + fighter.turnBuffer);
-		//History.innerHTML += chance + "<br>";
+		//chance = Math.floor((((fighter.armed.level / defender.dodging.level) * (0.99 + defender.turnBuffer) * Math.random()) * 100))
+		chance = randomGen(0,2 + fighter.turnBuffer - defender.turnBuffer);
 
-		//reduce with injuries
-		for(i=0;i<fighter.limbs.parts.length;i++){
-			hasEyes = 0;
-			if(fighter.limbs.parts[i].name == "right eye" || fighter.limbs.parts[i].name == "left eye"){
-				hasEyes = 1;
-				if(fighter.limbs.parts[i].status == "injured"){
-					chance*=0.5;
-				}
-				else if(fighter.limbs.parts[i].status == "wounded"){
-					chance *=0.25;
-				}
-				else if(fighter.limbs.parts[i].status == "broken"){
-					chance *= 0.05;
-					//console.log(chance);
-				}
-			}
-			if(fighter.desc == 'Robot'){
-				hasEyes = 1;
-			}
-			if(hasEyes = 0){
-				chance*=0.1;
-			}
-		}
-
-		determineChance = randomGen(0,100+fighter.turnBuffer);
+		determineChance = randomGen(0,2 + fighter.turnBuffer - defender.turnBuffer);
 
 		hitChance = randomGen(0,defender.limbs.parts.length);
 		
@@ -462,21 +441,26 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 		hurtPart = defender.limbs.parts[hitChance]; //what the fighter will HIT
 
 
-		if(determineChance <= chance && hurtPart.status == "healthy" && fighter.wield.damage == 1){
+		if(determineChance == chance && (hurtPart.status == "healthy" || hurtPart.status == "injured" || hurtPart.status == "cut") && fighter.wield.damage == 1){
 			fighter.armed.currentxp += chance/100;
 			fighter.armed.level = calcXP(fighter.armed.currentxp);
 			History.legible += 1;
 			History.innerHTML += "<span id='combat'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with a shot from their " + fighter.wield.name + ".</span> <br>";
-			defender.bleed(fighter, 2);
+			defender.bleed(defender);
+			if(randomGen(0,2)){
+				History.innerHTML += "<span id='combatBreak'>.. and tore it off!</span><br>";
+				hurtPart.status = 'xshot';
+				defender.gib(hurtPart);
+			}
 			hurtPart.status = "wounded";	
 		}
-		else if(determineChance <= chance && hurtPart.status == "wounded" || fighter.wield.damage > 1){
+		else if(determineChance == chance && hurtPart.status == "wounded" || fighter.wield.damage > 1){
 			fighter.armed.currentxp += chance/25;
 			fighter.armed.level = calcXP(fighter.armed.currentxp);
 			History.legible += 1;
-			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " shot through " + defender.name + "'s " + hurtPart.name + " with a shot from their " + fighter.wield.name + "! <br>";
+			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " shot through " + defender.name + "'s " + hurtPart.name + " with a shot from their " + fighter.wield.name + "!</span><br>";
 			hurtPart.status = "xshot";
-			defender.bleed(fighter, 4);
+			defender.bleed(defender);
 			if(hurtPart.name == "head" || hurtPart.name == "neck"){
 				defender.alive = false;
 			}
@@ -547,7 +531,14 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			//defender.limbs.parts.splice(hitChance,1);
 		}
 		else if(hurtPart.status == "broken" || hurtPart.status == "sliced" || hurtPart.status == "xshot"){
-			combat(fighter,defender,style);
+			defender.update();
+			if(defender.alive == true){
+				combat(fighter,defender,style);
+			}
+			else{
+				defender.causeofdeath = 'shot';
+			}
+			
 		}
 		else{
 			defender.dodging.currentxp += chance/100;

@@ -1,5 +1,6 @@
 graph = document.getElementById("gameGraph");
 debounce = 0;
+toggle = 0;
 
 History = document.getElementById("history");
 History.legible = 0;
@@ -20,6 +21,28 @@ pause = 0;
 fps = 25;
 
 var grid = [];
+
+checkList = function(list, object){
+  for(x=0; x < list.length; x++){
+    if(list[x] == object){
+      list.splice(x,1);
+    }
+  }
+}
+
+particles = [];
+
+particle = function(x, y, symbol, color){
+  this.x = x;
+  this.y = y;
+  this.symbol = symbol;
+  this.color ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
+  this.update = function(){
+    grid[(y*10) + x].particles.push(this)
+  }
+  this.update();
+  particles.push(this);
+}
 
 projectile = function(x, y, direction, color){
   this.x = x;
@@ -44,9 +67,10 @@ point = function(x,y,symbol,desc){
   this.desc = desc;
   this.items = [];
   this.projectile = null;
+  this.particles = [];
   this.color = "~";
   this.colorIn = function(constant, changing, version){
-    color = randomGen(changing,1);
+    color = randomGen(1,changing);
     if(version == 1){
       color = '<span style="background-color:#'+color+constant+color+constant+color+constant+';"">'+this.symbol+'</span>';
     }
@@ -512,11 +536,12 @@ player.checkBrokenBones = function(){
     if(player.limbs.parts[h].status == "broken" || player.limbs.parts[h].status == "sliced" || player.limbs.parts[h].status == "xshot"){
       player.turnBuffer += 1;
     }
+
     if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "left hand") && (player.limbs.parts[h].status !== "broken" || player.limbs.parts[h].status !== "sliced" || player.limbs.parts[h].status !== "xshot")){
       player.grasp ++;
     }
     if((player.limbs.parts[h].name == "right upper arm" || player.limbs.parts[h].name == "left upper arm" || player.limbs.parts[h].name == "left lower arm" || player.limbs.parts[h].name == "right lower arm") && (player.limbs.parts[h].status == "broken" || player.limbs.parts[h].status == "sliced" || player.limbs.parts[h].status == "xshot")){
-      player.grasp --;
+      //player.grasp --;
       /*for(k=0;k<player.limbs.parts.length;k++){
         if(player.limbs.parts[k].name == "left lower arm" || player.limbs.parts[k].name == "right lower arm" || player.limbs.parts[k].name == "right hand" || player.limbs.parts[k].name == "left hand"){
           player.limbs.parts[k].status = "broken";
@@ -541,7 +566,7 @@ player.checkBrokenBones = function(){
 
 player.fireAt = function(direction){
   pause = 1;
-  History.legible ++;
+  //History.legible ++;
   fire = function(frontx, fronty){
     player.aiming = 0;
     friendlyBullet = new projectile(frontx,fronty,direction, '#00FF00');
@@ -549,6 +574,7 @@ player.fireAt = function(direction){
     grid[(fronty*10)+frontx].projectile = friendlyBullet;
     //clearInterval(timer);
     while(friendlyBullet.exists == 1){
+      console.log('calculating bullet');
       if(grid[(friendlyBullet.y*10)+friendlyBullet.x].character !== null || grid[(friendlyBullet.y*10)+friendlyBullet.x].desc !== 'floor'){
         friendlyBullet.exists = 0;
         pause = 0;
@@ -578,6 +604,7 @@ player.fireAt = function(direction){
         }
         grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = friendlyBullet;
         friendlyBullet.distance ++;
+
       }
     }
     fps = 25;
@@ -662,34 +689,14 @@ drawGraph = function(){
 };
 
 updateGraph = function(condition){
+  console.log('updating graph');
   graph.innerHTML = "";
   var counter = 0;
+  for(p=0; p < particles.length; p++){
+    particles[p].update();
+  }
   for(y=0;y<10; y++){
     for(i=0;i<10;i++){
-      /**if(condition == 'blind'){
-        rand = randomGen(0,player.blind*2);
-        if(rand == 3){
-          graph.innerHTML += grid[counter].color = "<span style='background-color:#000000';>?</span>";
-        }
-        else{
-          if(grid[counter].character != null){
-            graph.innerHTML += grid[counter].character.color;
-          }
-          else if(grid[counter].projectile != null){
-            graph.innerHTML += grid[counter].projectile.symbol;
-          }
-          else if(grid[counter].items.length != 0){
-            graph.innerHTML += grid[counter].items[grid[counter].items.length -1].color;
-          }
-
-
-          else{
-            graph.innerHTML += grid[counter].color; //View as NORMAL
-          }
-        }
-        
-        counter++;
-      }**/
       if(true){
         if(grid[counter].character != null){
           graph.innerHTML += grid[counter].character.color;
@@ -699,6 +706,9 @@ updateGraph = function(condition){
         }
         else if(grid[counter].items.length != 0){
           graph.innerHTML += grid[counter].items[grid[counter].items.length -1].color;
+        }
+        else if(grid[counter].particles.length != 0){
+          graph.innerHTML += grid[counter].particles[grid[counter].particles.length -1].color;
         }
 
         else{
@@ -715,16 +725,17 @@ updateGraph = function(condition){
   //grid[constant].symbol = "X";
 
   //update PLAYER
-  for(d=0;d<grid.length;d++){
-    if(grid[d].x == player.x && grid[d].y == player.y){
-      grid[d].character = player;
-    }
-    for(e=0;e<entities.length;e++){
-      if(grid[d].x == entities[e].x && grid[d].y == entities[e].y && entities[e].alive == true){
-        grid[d].character = entities[e];
-      }
-    }
-  }
+  // for(d=0;d<grid.length;d++){
+  //   if(grid[d].x == player.x && grid[d].y == player.y){
+  //     grid[d].character = player;
+  //   }
+  //   for(e=0;e<entities.length;e++){
+  //     if(grid[d].x == entities[e].x && grid[d].y == entities[e].y && entities[e].alive == true){
+  //       grid[d].character = entities[e];
+  //     }
+  //   }
+  // }
+  //return true;
 };
 
 
@@ -937,11 +948,7 @@ update = function(){
   updateGraph();
 }
 //update();
+grid[player.x + player.y*10].character = player;
 
 
-var timer = setInterval(function(){
-  for(x=0;x<player.turnBuffer;x++){
-    update();
-  }
-  pastTurn = turn;
-},25);
+update();

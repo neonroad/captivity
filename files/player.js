@@ -118,11 +118,20 @@ document.body.onkeydown = function(event){
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc+1].character = null;
+                  update();
                 }
                 else if(player.aiming == 1){
                   History.innerHTML += "Left. <br>";
                   player.fireAt('left');
                   turn++;
+                  update();
+                  if(player.wield.name == "minigun"){
+                    for(x=0;x<100;x++){
+                      player.fireAt('left');
+                      turn++;
+                    }
+                    update();
+                  }
                 }
             } 
             else if (map[38]) {
@@ -132,11 +141,13 @@ document.body.onkeydown = function(event){
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc+10].character = null;
+                  update();
                 }
                 else if(player.aiming == 1){
                   History.innerHTML += "Up. <br>";
                   player.fireAt('up');
                   turn++;
+                  update();
                 }
             } 
             else if (map[39]) {
@@ -146,11 +157,13 @@ document.body.onkeydown = function(event){
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc-1].character = null;
+                  update();
                 }
                 else if(player.aiming == 1){
                   History.innerHTML += "Right. <br>";
                   player.fireAt('right');
                   turn++;
+                  update();
                 }
             } 
             else if (map[40]) {
@@ -160,16 +173,31 @@ document.body.onkeydown = function(event){
                   prevLoc = ((player.y*10) + player.x);
                   grid[prevLoc].character = player;
                   grid[prevLoc-10].character = null;
+                  update();
                 }  
                 else if(player.aiming == 1){
                   History.innerHTML += "Down. <br>";
                   player.fireAt('down');
                   turn++;
+                  update();
                 }
             }
             else if (map[190]){
               player.checkBrokenBones();
               turn++;
+              update();
+              if(toggle == 0){
+                timer = setInterval(function(){
+                  updateGraph();
+                },200);
+                toggle = 1;
+                History.innerHTML += "Toggle on <br>";
+              }
+              else{
+                clearInterval(timer);
+                toggle = 0;
+                History.innerHTML += "Toggle off <br>";
+              }
             }
             else if (map[188]){ //pick up
               map[event.keyCode] = false;
@@ -180,7 +208,7 @@ document.body.onkeydown = function(event){
                     grid[(player.y*10)+player.x].items.splice(i,1);
                     turn++;
                     player.checkBrokenBones();
-                    //update();
+                    update();
                     if(player.wield == 0 && player.grasp > 0){
                       if(confirm("Wield " + player.inv[player.inv.length-1].name + "?")){
                         player.wield = player.inv[player.inv.length-1];
