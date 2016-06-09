@@ -17,11 +17,13 @@ document.body.onkeydown = function(event){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 1)].character,"unarmed");
               turn++;
+              update();
             }
             else if(grid[(prevLoc + 1)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 1)].character,"melee");
               turn++;
+              update();
             }
             return false;
           }
@@ -39,11 +41,13 @@ document.body.onkeydown = function(event){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 10)].character,"unarmed");
               turn++;
+              update();
             }
             else if(grid[(prevLoc + 10)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc + 10)].character,"melee");
               turn++;
+              update();
             }
             return false;
           }
@@ -62,11 +66,13 @@ document.body.onkeydown = function(event){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc -1)].character,"unarmed");
               turn++;
+              update();
             }
             else if(grid[(prevLoc - 1)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc - 1)].character,"melee");
               turn++;
+              update();
             }
             return false;
           }
@@ -84,11 +90,13 @@ document.body.onkeydown = function(event){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc - 10)].character,"unarmed");
               turn++;
+              update();
             }
             else if(grid[(prevLoc - 10)].character !== null && player.wield !== 0 && player.aiming == 0){
               player.checkBrokenBones();
               combat(player,grid[(prevLoc - 10)].character,"melee");
               turn++;
+              update();
             }
             return false;
           }
@@ -189,7 +197,7 @@ document.body.onkeydown = function(event){
               if(toggle == 0){
                 timer = setInterval(function(){
                   updateGraph();
-                },200);
+                },100);
                 toggle = 1;
                 History.innerHTML += "Toggle on <br>";
               }

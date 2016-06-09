@@ -82,6 +82,7 @@ enemy = function(x,y,symbol,desc){
 		this.unarmed = new skill('unarmed',1,1);
 		this.dodging = new skill('dodging',1,1);
 		this.melee = new skill('melee',1,1);
+		this.armed = new skill('armed', 1,1);
 	}
 	this.generateSkills();
 
@@ -93,7 +94,7 @@ enemy = function(x,y,symbol,desc){
 		blood.parent = source;
 		blood.update = function(){
 			this.step ++;
-			if(this.step < randomGen(1,10) && grid[(this.y * 10) + this.x].desc !== 'wall'){
+			if(this.step < randomGen(1,6) && grid[(this.y * 10) + this.x].desc !== 'wall'){
 				checkList(grid[(this.y * 10) + this.x].particles, this);
 
 				switch(this.direction){
@@ -354,6 +355,66 @@ enemy = function(x,y,symbol,desc){
 
 	}
 
+	this.fireAt = function(direction){
+	  pause = 1;
+	  //History.legible ++;
+		fire = function(frontx, fronty, parent){
+			parent.aiming = 0;
+			enemyBullet = new projectile(frontx,fronty,direction, '#00FF00');
+			enemyBullet.distance = 0;
+			grid[(fronty*10)+frontx].projectile = enemyBullet;
+			//clearInterval(timer);
+			while(enemyBullet.exists == 1){
+			  console.log('calculating bullet');
+			  if(grid[(enemyBullet.y*10)+enemyBullet.x].character !== null || grid[(enemyBullet.y*10)+enemyBullet.x].desc !== 'floor'){
+			    enemyBullet.exists = 0;
+			    pause = 0;
+			    if(grid[(enemyBullet.y*10)+enemyBullet.x].desc !== 'floor'){
+			      grid[(enemyBullet.y*10)+enemyBullet.x].symbol = "#";
+			      //grid[(enemyBullet.y*10)+enemyBullet.x].color = '<span style="background-color:#00AA00;"">'+grid[(enemyBullet.y*10)+enemyBullet.x].symbol+'</span>';
+			      grid[(enemyBullet.y*10)+enemyBullet.x].colorIn(6,9,1);
+			    }
+			    else if(grid[(enemyBullet.y*10)+enemyBullet.x].character !== null){
+			      combat(parent, grid[(enemyBullet.y*10)+enemyBullet.x].character, parent.wield.type, enemyBullet.distance); //on HIT
+			    }
+			    grid[(enemyBullet.y*10)+enemyBullet.x].projectile = null;
+			  }
+			  else{
+			    grid[(enemyBullet.y*10)+enemyBullet.x].projectile = null;
+			    if(direction == 'left'){
+			      enemyBullet.x --;
+			    }
+			    else if(direction == 'up'){
+			      enemyBullet.y --;
+			    }
+			    else if(direction == 'right'){
+			      enemyBullet.x ++;
+			    }
+			    else if(direction == 'down'){
+			      enemyBullet.y ++;
+			    }
+			    grid[(enemyBullet.y*10)+enemyBullet.x].projectile = enemyBullet;
+			    enemyBullet.distance ++;
+
+			  }
+			}
+			fps = 25;
+		}
+		if(direction == 'left'){
+		fire(this.x-1,this.y, this);
+		}
+		else if(direction == 'up'){
+		fire(this.x, this.y-1, this);
+		}
+		else if(direction == 'right'){
+		fire(this.x+1, this.y, this);
+		}
+		else if(direction == 'down'){
+		fire(this.x, this.y+1, this);
+		}
+	  
+	}
+
 	this.checkAvailability = function(direction){
 		//check for available items at feet
 		if(direction == "left"){
@@ -463,6 +524,116 @@ enemy = function(x,y,symbol,desc){
 			}
 		}
 	}
+
+	this.findTarget = function(){
+		var f = 3;
+		var z = 1;
+		var x = f+1;
+		var y = f+1;
+		var currentPos = (this.y*10) + this.x;
+		var checkPos = "";
+		var stopSearchXR = 0;
+		var stopSearchYD = 0;
+		var stopSearchXL = 0;
+		var stopSearchYU = 0;
+		for(var g = 0; g < f; g++){
+			for (var i = 0; i < x; i++) {
+				if(stopSearchXR == 1){
+					stopSearchXR = 0;
+				}
+				checkPos = grid[currentPos-(z*10) + i];
+				if(checkPos == undefined){
+					stopSearchXR = 2;
+					break;
+				}
+				if(((checkPos.y*10 + checkPos.x)+1)%10 == 0){
+					console.log("Max grid reached! (XR)");
+					stopSearchXR = 1;
+					break;
+				}
+				if(checkPos.desc !== 'wall' && stopSearchXR == 0){
+
+					if(checkPos.character !== null){
+						this.target = checkPos.character;
+					}
+
+					checkPos.color = "!";
+				}
+			};
+			for (var i = 0; i < y; i++) {
+				console.log(stopSearchYD + " :^)");
+				if(stopSearchYD == 1){
+					stopSearchYD = 0;
+				}
+				checkPos = grid[currentPos + z + (i*10)];
+				if(checkPos == undefined){
+					stopSearchYD += 1;
+					break;
+				}
+				console.log(checkPos.x + checkPos.y*10);
+				if(((checkPos.y*10 + checkPos.x)+1)%10 == 0){
+					console.log("Max grid reached! (YD)");
+					stopSearchYD = 2;
+					console.log(stopSearchYD + " :)");
+					break;
+				}
+				if(checkPos.desc !== 'wall' && stopSearchYD == 0){
+					console.log(stopSearchYD + " :)");
+					if(checkPos.character !== null){
+						this.target = checkPos.character;
+					}
+					checkPos.color = "<span id = 'combatWound'>?</span>";
+				}
+			};
+			for (var xl = 0; xl < x; xl++) {
+				if(stopSearchXL == 1){
+					stopSearchXL = 0;
+				}
+				checkPos = grid[currentPos+(z*10) - xl];
+				if(checkPos == undefined){
+					stopSearchXL = 2;
+					break;
+				}
+				if(((checkPos.y*10 + checkPos.x))%10 == 0){
+					console.log("Max grid reached! (XL)");
+					stopSearchXL = 1;
+					break;
+				}
+				if(checkPos.desc !== 'wall' && stopSearchXL == 0){
+					if(checkPos.character !== null){
+						this.target = checkPos.character;
+					}
+					checkPos.color = "<span id='combatMiss'>S</span>";	
+				}
+			};
+			for (var i = 0; i < y; i++) {
+				if(stopSearchYU == 1){
+					stopSearchYU = 0;
+				}
+				checkPos = grid[currentPos - z - (i*10)];
+				if(checkPos == undefined){
+					stopSearchYU += 1;
+					break;
+				}
+				if((checkPos.y*10 + checkPos.x)%10 == 0){
+					console.log("Max grid reached! (YU)");
+					stopSearchYU = 2;
+					break;
+				}
+				if(checkPos.desc !== 'wall' && stopSearchYU == 0){
+					if(checkPos.character !== null){
+						this.target = checkPos.character;
+					}
+					checkPos.color = "<span id = 'combatBreak'>{</span>";
+				}		
+			};	
+			z++;
+		}
+		
+
+		updateGraph();
+	}
+
 	this.update = function(){
 		if(this.alive == false && this.name !== "dead"){
 			this.name == "dead";
@@ -549,6 +720,9 @@ enemy = function(x,y,symbol,desc){
 				this.turnTaken = 0;
 			}
 
+			// else{
+			// 	this.findTarget();
+			// }
 
 			else if(this.target.x < this.x){
 				if(this.checkAvailability('left')){
@@ -588,7 +762,8 @@ enemy = function(x,y,symbol,desc){
 	this.update();
 }
 
-var robot = new enemy(1,5, "Θ",'Robot');
+robot = new enemy(randomGen(1,7),randomGen(2,9), "Θ",'Robot');
+robot.findTarget();
 
 var weapon = new item(5,2,"/","weapon");
 weapon.type = "sharp";
@@ -596,7 +771,7 @@ weapon.name = "knife";
 weapon.value = 2;
 weapon.color = "<span style='background-color:#636B5F';>"+weapon.symbol+"</span>";
 
-var weapon = new item(7,2,"¬","weapon");
+var weapon = new item(1,4,"¬","weapon");
 weapon.type = "gun";
 weapon.name = "laser pistol";
 weapon.value = 3;

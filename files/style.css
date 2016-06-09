@@ -11,8 +11,7 @@ body{
 
 #gameGraph{
   font-family:'Courier';
-  width:96px;
-  height:180px;
+  
   display: inline-block;
   background-color: #66658A;
   overflow:hidden;

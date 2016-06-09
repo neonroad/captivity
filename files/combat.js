@@ -74,7 +74,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			History.legible += 1;
 			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " broke " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + "! <br>";
 			hurtPart.status = "broken";
-			defender.bleed(fighter, 2);
+			defender.bleed(defender, 2);
 			if(hurtPart.name == "head" || hurtPart.name == "neck" || hurtPart.name == "torso"){
 				defender.alive = false;
 			}
@@ -213,7 +213,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			History.legible += 1;
 			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " sliced " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + "! <br>";
 			hurtPart.status = "sliced";
-			defender.bleed(fighter, 2);
+			defender.bleed(defender, 2);
 			defender.gib(hurtPart);
 			if(hurtPart.name == "head" || hurtPart.name == "neck"){
 				//defender.alive = false;
@@ -354,7 +354,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			History.legible += 1;
 			History.innerHTML += "<span id='combatBreak'>" +fighter.name + " broke " + defender.name + "'s " + hurtPart.name + " with " + fighter.wield.name + "! <br>";
 			hurtPart.status = "broken";
-			defender.bleed(fighter, 2);
+			defender.bleed(defender, 2);
 			if(hurtPart.name == "head" || hurtPart.name == "neck" || hurtPart.name == "torso"){
 				defender.alive = false;
 			}
@@ -441,7 +441,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 		hurtPart = defender.limbs.parts[hitChance]; //what the fighter will HIT
 
 
-		if(determineChance == chance && (hurtPart.status == "healthy" || hurtPart.status == "injured" || hurtPart.status == "cut") && fighter.wield.damage == 1){
+		if(determineChance == chance && (hurtPart.status == "healthy" || hurtPart.status == "injured" || hurtPart.status == "cut")){
 			fighter.armed.currentxp += chance/100;
 			fighter.armed.level = calcXP(fighter.armed.currentxp);
 			History.legible += 1;
@@ -454,7 +454,7 @@ combat = function(fighter, defender,style, distance){ //distance is used mainly 
 			}
 			hurtPart.status = "wounded";	
 		}
-		else if(determineChance == chance && hurtPart.status == "wounded" || fighter.wield.damage > 1){
+		else if(determineChance == chance && hurtPart.status == "wounded"){
 			fighter.armed.currentxp += chance/25;
 			fighter.armed.level = calcXP(fighter.armed.currentxp);
 			History.legible += 1;

@@ -220,99 +220,60 @@ player.generateSkills = function(){
 player.generateSkills();
 
 player.bleed = function(source, level){
-  grid[((player.y * 10) + player.x)].colorIn('C',4,2);
-  if(source.x > player.x){  //if they are to the RIGHT
-    if(level <= 3){
-      for(x=0;x<level +1;x++){
-        distance = randomGen(0,1);
-        locationB = randomGen(0,6);
-        if(locationB == 1){
-          grid[((player.y * 10) + player.x)+10 + distance].colorIn('C',4,2);
+    grid[((source.y * 10) + source.x)].colorIn('C',4,2);
+    blood = new particle(source.x,source.y, '░','#FF0000');
+    blood.step = 0;
+    blood.direction = randomGen(1,9)
+    blood.parent = source;
+    blood.update = function(){
+      this.step ++;
+      if(this.step < randomGen(1,4) && grid[(this.y * 10) + this.x].desc !== 'wall'){
+        checkList(grid[(this.y * 10) + this.x].particles, this);
+
+        switch(this.direction){
+          case 1:
+            this.x++;
+            break;
+          case 2:
+            this.x++;
+            this.y++;
+            break;
+          case 3:
+            this.y++;
+            break;
+          case 4:
+            this.x--;
+            this.y++;
+            break;
+          case 5:
+            this.x--;
+            break;
+          case 6:
+            this.x--;
+            this.y--;
+            break;
+          case 7:
+            this.y--;
+            break;
+          case 8:
+            this.x++;
+            this.y--;
+            break;
         }
-        else if(locationB == 2){
-          grid[((player.y * 10) + player.x)-1 - distance].colorIn('C',4,2);
+        if((this.parent.alive == false || this.parent.alive == undefined) && this.step %2 == 0){
+          robot.bleed(this.parent);
         }
-        else if(locationB == 3){
-          grid[((player.y * 10) + player.x)-10 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 4){
-          grid[((player.y * 10) + player.x)-11 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 5){
-          grid[((player.y * 10) + player.x)+9 - distance].colorIn('C',4,2);
-        }
+        grid[(this.y * 10) + this.x].particles.push(this);
       }
-    } 
-  }
-  if(source.y<player.y){  //if they are ABOVE
-    if(level <= 3){
-      for(x=0;x<level +1;x++){
-        distance = randomGen(0,1);
-        locationB = randomGen(0,6);
-        if(locationB == 1){
-          grid[((player.y * 10) + player.x)+10 + distance].colorIn('C',4,2);
-        }
-        else if(locationB == 2){
-          grid[((player.y * 10) + player.x)-1 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 3){
-          grid[((player.y * 10) + player.x)+1 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 4){
-          grid[((player.y * 10) + player.x)+11 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 5){
-          grid[((player.y * 10) + player.x)+9 - distance].colorIn('C',4,2);
-        }
+      else{
+        checkList(grid[(this.y * 10) + this.x].particles, this);
+        grid[((this.y * 10) + this.x)].colorIn('C',4,2);
+        checkList(particles, this);
       }
-    } 
-  }
-  if(source.y>player.y){  //if they are BELOW
-    if(level <= 3){
-      for(x=0;x<level +1;x++){
-        distance = randomGen(0,1);
-        locationB = randomGen(0,6);
-        if(locationB == 1){
-          grid[((player.y * 10) + player.x)-10 + distance].colorIn('C',4,2);
-        }
-        else if(locationB == 2){
-          grid[((player.y * 10) + player.x)-1 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 3){
-          grid[((player.y * 10) + player.x)+1 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 4){
-          grid[((player.y * 10) + player.x)-11 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 5){
-          grid[((player.y * 10) + player.x)-9 - distance].colorIn('C',4,2);
-        }
-      }
-    } 
-  }
-  if(source.x < player.x){  //if they are to the LEFT
-    if(level <= 3){
-      for(x=0;x<level +1;x++){
-        distance = randomGen(0,1);
-        locationB = randomGen(0,6);
-        if(locationB == 1){
-          grid[((player.y * 10) + player.x)+10 + distance].colorIn('C',4,2);
-        }
-        else if(locationB == 2){
-          grid[((player.y * 10) + player.x)+1 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 3){
-          grid[((player.y * 10) + player.x)-10 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 4){
-          grid[((player.y * 10) + player.x)-9 - distance].colorIn('C',4,2);
-        }
-        else if(locationB == 5){
-          grid[((player.y * 10) + player.x)+11 - distance].colorIn('C',4,2);
-        }
-      }
-    } 
-  }
+
+
+    }
+    
 }
 
 player.gib = function(part, force){
@@ -675,9 +636,17 @@ drawGraph = function(){
         grid.push(newPoint);
       }
       else{
-        newPoint = new point(GridX,GridY,"+",'floor');
-        newPoint.colorIn('B',9,0);
-        grid.push(newPoint);
+        
+        if(randomGen(0,5) == 1){
+          newPoint = new point(GridX,GridY,"O",'wall');
+          newPoint.colorIn(9,9,0);
+          grid.push(newPoint);
+        }
+        else{
+          newPoint = new point(GridX,GridY,"+",'floor');
+          newPoint.colorIn('B',9,0);
+          grid.push(newPoint);
+        }
       }
       graph.innerHTML += newPoint.color;
       GridX++;
@@ -717,7 +686,7 @@ updateGraph = function(condition){
         counter++;
       }
       //graph.innerHTML += "|("+grid[counter].x+","+grid[counter].y+")|"; //View the COORDINATES
-      //graph.innerHTML += "|("+counter+")|"; //View the GRID ARRAY #
+      //graph.innerHTML += "|("+(counter -1) +")|"; //View the GRID ARRAY #
 
     } 
     graph.innerHTML += "<br>";
@@ -914,7 +883,7 @@ update = function(){
       }
     }
   }
-  if(History.legible > 15){
+  if(History.legible > 5){
     log += History.innerHTML;
     History.innerHTML = "<span style='background-color:#6D6E5F'>[HISTORY]</span><br>";
     History.legible = 0;
