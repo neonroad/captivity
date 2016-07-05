@@ -30,6 +30,14 @@ checkList = function(list, object){
   }
 }
 
+reticle = function(x, y, symbol, color){
+  this.x = x;
+  this.y = y;
+  this.symbol = symbol;
+  this.color ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
+  grid[this.x + this.y*10].reticle = this;
+}
+
 particles = [];
 
 particle = function(x, y, symbol, color){
@@ -68,6 +76,7 @@ point = function(x,y,symbol,desc){
   this.items = [];
   this.projectile = null;
   this.particles = [];
+  this.reticle = null;
   this.color = "~";
   this.colorIn = function(constant, changing, version){
     color = randomGen(1,changing);
@@ -76,6 +85,9 @@ point = function(x,y,symbol,desc){
     }
     else if(version == 2){
       color = '<span style="background-color:#'+constant+color+color+color+color+color+';"">'+this.symbol+'</span>';
+    }
+    else if(version == 3){
+      color = '<span style="background-color:#'+ constant +';"">'+this.symbol+'</span>';
     }
     else{
       color = '<span style="background-color:#'+constant +color+constant+color+constant +color+';"">'+this.symbol+'</span>';
@@ -90,7 +102,7 @@ item = function(x,y,symbol,desc){
   this.y = y;
   this.symbol = symbol;
   this.desc = desc;
-  this.color = symbol;
+  this.color = "<span style='background-color:#555555';>"+symbol+"</span>";
   this.name = desc;
   grid[(this.y * 10) + this.x].items.push(this);
 }
@@ -113,9 +125,18 @@ skill = function(name,level,currentxp){
   this.level = level;
   this.currentxp = currentxp;
 }
+
+
 //create basic human
-health = function(status){
-  this.status = status;
+health = function(name,child,parent,status){
+  this.name = name;
+  if(status == undefined){
+    this.status = 'healthy';
+  }
+  else{
+    this.status = status;
+  }
+  player.limbs.parts.push(this);
 }
 
 //Create player
@@ -128,96 +149,32 @@ player.alive = true;
 player.inv = [];
 player.wield = 0;
 player.aiming = 0;
-player.blind = 0;
+player.level = 1;
 player.turnBuffer = 1;
 player.createLimbs = function(){
-  player.limbs.head = new health('healthy');
-  player.limbs.head.name = "head";
-  player.limbs.parts.push(player.limbs.head);
+  player.limbs.head = new health('head');
+  player.limbs.neck = new health('neck');
+  player.limbs.rHand = new health('right hand');
+  player.limbs.lHand = new health('left hand');
+  player.limbs.rFoot = new health('right foot');
+  player.limbs.lFoot = new health('left foot');
+  player.limbs.rArm = new health('right lower arm',player.limbs.rHand)
+  player.limbs.lArm = new health('left lower arm',player.limbs.lHand);
+  player.limbs.rLeg = new health('right lower leg',player.limbs.rFoot);
+  player.limbs.lLeg = new health('left lower leg',player.limbs.lFoot);
+  player.limbs.rUpArm = new health('right upper arm',player.limbs.rArm);
+  player.limbs.lUpArm = new health('left upper arm', player.limbs.lArm);
+  player.limbs.rUpLeg = new health('right upper leg', player.limbs.rLeg);
+  player.limbs.lUpLeg = new health('left upper leg', player.limbs.lLeg);
 
-  player.limbs.head.reye = new health('healthy');
-  player.limbs.head.reye.name = "right eye";
-  player.limbs.parts.push(player.limbs.head.reye);
 
-  player.limbs.head.leye = new health('healthy');
-  player.limbs.head.leye.name = "left eye";
-  player.limbs.parts.push(player.limbs.head.leye);
-
-  player.limbs.head.mouth = new health('healthy');
-  player.limbs.head.mouth.name = "mouth";
-  player.limbs.parts.push(player.limbs.head.mouth);
-
-  player.limbs.torso = new health('healthy');
-  player.limbs.torso.name = "torso";
-  player.limbs.parts.push(player.limbs.torso);
-
-  player.limbs.torso.neck = new health('healthy');
-  player.limbs.torso.neck.name = "neck";
-  player.limbs.parts.push(player.limbs.torso.neck);
-
-  player.limbs.torso.rUpArm = new health('healthy');
-  player.limbs.torso.rUpArm.name = "right upper arm";
-  player.limbs.parts.push(player.limbs.torso.rUpArm);
-
-  player.limbs.torso.lUpArm = new health('healthy');
-  player.limbs.torso.lUpArm.name = "left upper arm";
-  player.limbs.parts.push(player.limbs.torso.lUpArm);
-
-  player.limbs.torso.rUpLeg = new health('healthy');
-  player.limbs.torso.rUpLeg.name = "right upper leg";
-  player.limbs.parts.push(player.limbs.torso.rUpLeg);
-
-  player.limbs.torso.lUpLeg = new health('healthy');
-  player.limbs.torso.lUpLeg.name = "left upper leg";
-  player.limbs.parts.push(player.limbs.torso.lUpLeg);
-
-  player.limbs.rLeg = new health('healthy');
-  player.limbs.rLeg.name = "right lower leg";
-  player.limbs.parts.push(player.limbs.rLeg);
-
-  player.limbs.lLeg = new health('healthy');
-  player.limbs.lLeg.name = "left lower leg";
-  player.limbs.parts.push(player.limbs.lLeg);
-
-  player.limbs.rLeg.foot = new health('healthy');
-  player.limbs.rLeg.foot.name = "right foot";
-  player.limbs.parts.push(player.limbs.rLeg.foot);
-
-  player.limbs.lLeg.foot = new health('healthy');
-  player.limbs.lLeg.foot.name = "left foot";
-  player.limbs.parts.push(player.limbs.lLeg.foot);
-
-  player.limbs.rArm = new health('healthy');
-  player.limbs.rArm.name = "right lower arm";
-  player.limbs.parts.push(player.limbs.rArm);
-
-  player.limbs.lArm = new health('healthy');
-  player.limbs.lArm.name = "left lower arm";
-  player.limbs.parts.push(player.limbs.lArm);
-
-  player.limbs.rArm.hand = new health('healthy');
-  player.limbs.rArm.hand.name = "right hand";
-  player.limbs.parts.push(player.limbs.rArm.hand);
-
-  player.limbs.lArm.hand = new health('healthy');
-  player.limbs.lArm.hand.name = "left hand";
-  player.limbs.parts.push(player.limbs.lArm.hand);
+  player.limbs.lFoot.fight = true;
+  player.limbs.rFoot.fight = true;
+  player.limbs.lHand.fight = true;
+  player.limbs.rHand.fight = true;
 
 }
 player.createLimbs();
-
-player.skills = [];
-player.generateSkills = function(){
-  player.dodging = new skill('dodging',1,1);
-  player.skills.push(player.dodging);
-  player.unarmed = new skill('unarmed',1,1);
-  player.skills.push(player.unarmed);
-  player.melee = new skill('melee',1,1);
-  player.skills.push(player.melee);
-  player.armed = new skill('armed',1,9000);
-  player.skills.push(player.armed);
-}
-player.generateSkills();
 
 player.bleed = function(source, level){
     grid[((source.y * 10) + source.x)].colorIn('C',4,2);
@@ -225,9 +182,12 @@ player.bleed = function(source, level){
     blood.step = 0;
     blood.direction = randomGen(1,9)
     blood.parent = source;
+    if(level == undefined){
+      level = 2;
+    }
     blood.update = function(){
       this.step ++;
-      if(this.step < randomGen(1,4) && grid[(this.y * 10) + this.x].desc !== 'wall'){
+      if(this.step < randomGen(level,4) && grid[(this.y * 10) + this.x].desc !== 'wall'){
         checkList(grid[(this.y * 10) + this.x].particles, this);
 
         switch(this.direction){
@@ -261,7 +221,7 @@ player.bleed = function(source, level){
             break;
         }
         if((this.parent.alive == false || this.parent.alive == undefined) && this.step %2 == 0){
-          robot.bleed(this.parent);
+          player.bleed(this.parent);
         }
         grid[(this.y * 10) + this.x].particles.push(this);
       }
@@ -484,7 +444,7 @@ player.gib = function(part, force){
       console.log('Gibbed ' + part.name);
     }
 
-  }
+}
 
 
 player.checkBrokenBones = function(){
@@ -586,21 +546,16 @@ player.fireAt = function(direction){
 }
 
 player.update = function(){
-  //player.checkBrokenBones();
-  if(player.alive == false && player.name !== "dead"){
-    player.name = "dead";
+  player.checkBrokenBones();
+  if(player.alive == false){
     var playerCorpse = new item(player.x,player.y,"@",'corpse');
     playerCorpse.color = '<span style="background-color:#C40000";>@</span>';
     player.color = '<span style="background-color:#C40000";>@</span>';
     grid[((player.y * 10) + player.x)].character = null;
+    // setInterval(function(){
+    //   update();
+    // },100);
     //grid[((player.y * 10) + player.x)].items.push(playerCorpse);
-  }
-  for(l=0;l<player.limbs.parts.length;l++){
-    if((player.limbs.parts[l].name == "left eye" || player.limbs.parts[l].name == "right eye") && player.limbs.parts[l].status == "broken"){
-      //grid[((player.y * 10) + player.x)].colorIn('C',4,2);
-      player.blind = 2;
-      
-    }
   }
 }
 
@@ -619,31 +574,32 @@ entities.gibAll = function(){ //hehe this one is fun and glitchy
 }
 
 drawGraph = function(){
+  graphSize = 10;
   graph.innerHTML = "";
   grid = [];
   GridX = 0;
   GridY = 0;
-  for(y=0;y<10; y++){
-    for(x=0;x<10;x++){
-      if(y == 0 || y == 9){
+  for(y=0;y<graphSize; y++){
+    for(x=0;x<graphSize;x++){
+      if(y == 0 || y == graphSize-1){
         newPoint = new point(GridX,GridY,"-",'wall');
         newPoint.colorIn(7,9,0);
         grid.push(newPoint);
       }
-      else if(x == 0 || x == 9){
+      else if(x == 0 || x == graphSize-1){
         newPoint = new point(GridX,GridY,"|",'wall');
         newPoint.colorIn(7,9,0);
         grid.push(newPoint);
       }
       else{
         
-        if(randomGen(0,5) == 1){
+        if(randomGen(0,15) == 1){
           newPoint = new point(GridX,GridY,"O",'wall');
           newPoint.colorIn(9,9,0);
           grid.push(newPoint);
         }
         else{
-          newPoint = new point(GridX,GridY,"+",'floor');
+          newPoint = new point(GridX,GridY,".",'floor');
           newPoint.colorIn('B',9,0);
           grid.push(newPoint);
         }
@@ -658,16 +614,19 @@ drawGraph = function(){
 };
 
 updateGraph = function(condition){
-  console.log('updating graph');
+  //console.log('updating graph');
   graph.innerHTML = "";
   var counter = 0;
   for(p=0; p < particles.length; p++){
     particles[p].update();
   }
-  for(y=0;y<10; y++){
-    for(i=0;i<10;i++){
+  for(y=0;y<graphSize; y++){
+    for(i=0;i<graphSize;i++){
       if(true){
-        if(grid[counter].character != null){
+        if(grid[counter].reticle != null){
+          graph.innerHTML += grid[counter].reticle.color;
+        }
+        else if(grid[counter].character != null){
           graph.innerHTML += grid[counter].character.color;
         }
         else if(grid[counter].projectile != null){
@@ -713,162 +672,18 @@ updateGraph();
 
 log = "";
 
-update = function(){
-  statusScreen.draw = function(){
-    this.continue = 0;
-    //console.log("drawing...");
-    while(this.continue < 20){
-      for(h=0;h<player.limbs.parts.length;h++){
-        if(player.limbs.parts[h].name == 'head' && this.continue == 0){
-          this.sampleText =  "........╔═════╗..........<br>";
-          this.sampleText += "........║%%%%%║..........<br>";
-          this.sampleText += "........║%%%%%║..........<br>";
-          this.sampleText += "........╚═╦═╦═╝..........<br>";
+update = function(skip){
 
-          statusString = this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase());    
-
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'neck' && this.continue == 1){
-          this.sampleText =  ".......╔══╩%╩══╗.........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase());   
-
-          this.continue ++; 
-        }
-        if(player.limbs.parts[h].name == 'right upper arm' && this.continue == 2){
-          this.sampleText =  "......╔╝%";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'torso' && this.continue == 3){
-          this.sampleText =  "║%%%║";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left upper arm' && this.continue == 4){
-          this.sampleText =  "%╚╗........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'right lower arm' && this.continue == 5){
-          this.sampleText =  "......║%╦";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'torso' && this.continue == 6){
-          this.sampleText =  "╝%%%╚";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left lower arm' && this.continue == 7){
-          this.sampleText =  "╦%║........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'right hand' && this.continue == 8){
-          this.sampleText =  "......║%%";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'torso' && this.continue == 9){
-          this.sampleText =  "║%%%║";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left hand' && this.continue == 10){
-          this.sampleText =  "%%║........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'torso' && this.continue == 11){
-          this.sampleText =  "......╚═╔╝%%%╚╗═╝........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'right upper leg' && this.continue == 12){
-          this.sampleText =  "........║%╔═";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left upper leg' && this.continue == 13){
-          this.sampleText =  "╗%║..........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'right lower leg' && this.continue == 14){
-          this.sampleText =  ".......╔╝%║.";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left lower leg' && this.continue == 15){
-          this.sampleText =  "║%╚╗.........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'right foot' && this.continue == 16){
-          this.sampleText =  "......╔╝%%║.";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left foot' && this.continue == 17){
-          this.sampleText =  "║%%╚╗........<br>";
-
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'right foot' && this.continue == 18){
-          this.sampleText =  "......╚═══╝.";  
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-        if(player.limbs.parts[h].name == 'left foot' && this.continue == 19){
-          this.sampleText =  "╚═══╝........<br>"; 
-          statusString += this.sampleText.replace(/%/g, player.limbs.parts[h].status[0].toUpperCase())
-          this.continue ++;
-        }
-
-      }      
-    }
-
-    // for(var s =0; s < statusString.length; s++){
-    //   if(statusString[s] == 's'){
-    //     console.log("yu");
-    //     statusString.replace(statusString[s], status);
-    //   }
-    // }
-    statusString = statusString.replace(/H/g,'<span id="combatMiss">H</span>');
-    statusString = statusString.replace(/I/g,'<span id="combat">I</span>');
-    statusString = statusString.replace(/C/g,'<span id="combat">C</span>');
-    statusString = statusString.replace(/W/g,'<span id="combatWound">W</span>');
-    statusString = statusString.replace(/B/g,'<span id="combatBreak">B</span>');
-    statusString = statusString.replace(/S/g,'<span id="combatBreak">S</span>');
-    statusString = statusString.replace(/X/g,'<span id="combatBreak">X</span>');
-    statusBox.innerHTML = statusString;
-  }
-
-  statusScreen.draw();
-  if(player.name !== "dead"){
+  //statusScreen.draw();
+  if(true){
     player.update();
   }
-  if(turn > pastTurn && player.alive == true){
+  if(player.alive == true && skip !== true){
     for(e=0;e<entities.length;e++){
       entities[e].update();
+      if(entities[e] == undefined){
+        break;
+      }
       if(entities[e].alive == false){
         entities.splice(e,1);
       }
@@ -877,10 +692,10 @@ update = function(){
   else if(player.alive == false){
     turn++;
     for(e=0;e<entities.length;e++){
-      if(entities[e].name !== "dead"){
+      if(entities[e].alive == true){
         entities[e].update();
-        
       }
+
     }
   }
   if(History.legible > 5){
@@ -893,10 +708,7 @@ update = function(){
 
   invBox.innerHTML = "<span style='background-color:#826033'>[INVENTORY]</span><br>";
 
-  for(s=0;s<player.skills.length;s++){
-    skillBox.innerHTML += player.skills[s].name + ": " + player.skills[s].level + "<br>";
-    player.skills[s].level = calcXP(player.skills[s].currentxp);
-  }
+  
 
   for(i=0;i<player.inv.length;i++){
     invBox.innerHTML += player.inv[i].name;
@@ -917,7 +729,10 @@ update = function(){
   updateGraph();
 }
 //update();
-grid[player.x + player.y*10].character = player;
+ grid[player.x + player.y*10].character = player;
 
 
 update();
+// setInterval(function(){
+//   updateGraph();
+// },100);
