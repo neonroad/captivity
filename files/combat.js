@@ -8,9 +8,7 @@ checkLimbs = function(part){
 combat = function(fighter, defender,style, finisher, continued){
 	if(style == "unarmed" && finisher !== true){
 		//chance = Math.floor(((fighter.unarmed.level/defender.dodging.level) * (Math.sqrt(fighter.unarmed.level))) );
-		chance = randomGen(1,2);
-
-		determineChance = randomGen(1,2);
+		chance = randomGen(1,3);
 
 		preference = []; //part to hit with
 
@@ -55,7 +53,7 @@ combat = function(fighter, defender,style, finisher, continued){
 				finisher = 1;
 				defender.alive = false;
 				if(finisher == 1){
-					combat(fighter,defender, 'unarmed', true);
+					combat(fighter,defender, style, true);
 				}
 				update(false);
 			}
@@ -83,7 +81,6 @@ combat = function(fighter, defender,style, finisher, continued){
 			//defender.bleed(fighter, 5);
 
 		}
-
 	}
 
 	else if( style == 'unarmed' && finisher == true){
@@ -122,7 +119,6 @@ combat = function(fighter, defender,style, finisher, continued){
 		hittingPart = preference[hittingPart];
 		
 		hurtPart = defender.limbs.parts[hurtChance];
-		console.log(fighter.name + " hits with his " + hittingPart.name + " to attack the defender's " + hurtPart.name);
 
 		if(hurtPart.status == 'broken'){
 			History.innerHTML += fighter.name + " tears out " + defender.name + "'s heart!</span><br>";
@@ -214,7 +210,84 @@ combat = function(fighter, defender,style, finisher, continued){
 			};
 			fighter.wield = undefined;
 		}
-
 	}
+
+	else if(style == 'armed' && finisher !== true){
+		hurtChance = randomGen(0,defender.limbs.parts.length); //what the fighter will HIT
+		hurtPart = defender.limbs.parts[hurtChance]; //what the fighter will HIT
+
+		for (var i = 0; i < grid[defender.x + defender.y*10].projectiles.length; i++) {
+			if(grid[defender.x + defender.y*10].projectiles[i].owner == fighter){
+				hittingPart = grid[defender.x + defender.y*10].projectiles[i];
+			}
+		};
+
+		if(hurtPart.status == "healthy"){
+			History.legible += 1;
+			History.innerHTML += "<span id='combat'>" + fighter.name + " injured " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ".</span> <br>";
+			hurtPart.status = "wounded";	
+		}
+
+		else if(hurtPart.status == "wounded"){
+
+			if(hurtPart.name == "head" || hurtPart.name == "neck"){
+				finisher = 1;
+				defender.alive = false;
+				if(finisher == 1){
+					combat(fighter,defender, style, true);
+				}
+				update(false);
+			}
+
+			else{
+				History.innerHTML += "<span id='combatBreak'>" +fighter.name + " broke " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + "! <br>";
+				hurtPart.status = "broken";
+				defender.bleed(defender, 2);
+				//defender.limbs.parts.splice(hitChance,1);
+				checkLimbs(hurtPart);				
+			}
+
+
+		}
+
+
+		else{
+			combat(fighter,defender,style);
+		}
+	}
+
+	else if( style == 'armed' && finisher == true){
+
+		setTimeout(function(){
+			History.style.backgroundColor = "#989987";
+		}, 100)
+		History.style.backgroundColor = "#FF0000";
+		defender.bleed(defender);
+		hurtChance = randomGen(0,defender.limbs.parts.length); //what the fighter will HIT
+
+		for (var i = 0; i < grid[defender.x + defender.y*10].projectiles.length; i++) {
+			if(grid[defender.x + defender.y*10].projectiles[i].owner == fighter){
+				hittingPart = grid[defender.x + defender.y*10].projectiles[i];
+			}
+		};		
+
+		for(h=0; h < fighter.limbs.parts.length; h++){ //Heal fighter
+			if(fighter.limbs.parts[h].status !== 'healthy'){
+				fighter.limbs.parts[h].status = 'healthy';
+			}
+		}
+		
+		hurtPart = defender.limbs.parts[hurtChance];
+
+		hurtPart.status = 'broken';
+
+		if(hurtPart.status == 'broken'){
+			History.innerHTML += fighter.name + " shoots through " + defender.name + "'s "+ hurtPart.name + "!</span><br>";
+			return;
+		}
+
+		History.innerHTML += "!</span><br>";
+		
+	}	
 
 }

@@ -20,6 +20,8 @@ pause = 0;
 
 fps = 25;
 
+abilities = [];
+
 var grid = [];
 
 checkList = function(list, object){
@@ -30,12 +32,20 @@ checkList = function(list, object){
   }
 }
 
-reticle = function(x, y, symbol, color){
+UI = function(x, y, symbol, color){
   this.x = x;
   this.y = y;
   this.symbol = symbol;
-  this.color ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
-  grid[this.x + this.y*10].reticle = this;
+  this.color ='<span style="background-color:'+color+';">'+this.symbol+'</span>';
+  grid[this.x + this.y*10].ui = this;
+  this.indicatorUpdate = function(){
+    if(grid[this.x+this.y*10].desc !== 'floor'){
+      this.color = '<span style="background-color:#3C9DBD;">'+this.symbol+'</span>';
+    }
+    if(grid[this.x+this.y*10].character !== null){
+      this.color = '<span style="background-color:#317991;">'+grid[this.x+this.y*10].character.symbol+'</span>';
+    }
+  }
 }
 
 particles = [];
@@ -52,19 +62,28 @@ particle = function(x, y, symbol, color){
   particles.push(this);
 }
 
-projectile = function(x, y, direction, color){
+projectile = function(x, y, owner, color, name){
   this.x = x;
   this.y = y;
   this.symbol = "╬";
-  this.color = color;
+  this.name = name;
+  this.owner = owner;
   this.exists = 1;
-  if(direction == 'left' || direction == 'right'){
-    this.symbol = "═";
+  this.color ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
+  this.update = function(){
+    grid[(this.y*10) + this.x].projectiles.push(this);
   }
-  else{
-    this.symbol = "║"
+  this.checkContact = function(){
+    if(grid[(this.y*10) + this.x].character !== owner || grid[(this.y*10) + this.x].character !== null){
+      combat(owner, grid[(this.y*10) + this.x].character, 'armed');
+      for (var i = 0; i < grid[this.x+this.y*10].projectiles.length; i++) {
+        if(grid[this.x+this.y*10].projectiles[i] == this){
+          grid[this.x+this.y*10].projectiles.splice(this, 1);
+        }
+      };
+    }
   }
-  this.symbol ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
+  this.update();  
 }
 
 point = function(x,y,symbol,desc){
@@ -74,9 +93,9 @@ point = function(x,y,symbol,desc){
   this.character = null;
   this.desc = desc;
   this.items = [];
-  this.projectile = null;
+  this.projectiles = [];
   this.particles = [];
-  this.reticle = null;
+  this.ui = null;
   this.color = "~";
   this.colorIn = function(constant, changing, version){
     color = randomGen(1,changing);
@@ -236,313 +255,12 @@ player.bleed = function(source, level){
     
 }
 
-player.gib = function(part, force){
-    this.partSymbol = "~";
-    part.status = "sliced";
-    if(part !== undefined){
-      if(part.name == 'head' && this.alive == 1){
-        this.alive = 0;
-        this.update();
-      }
-      if(part.name == 'neck'){
-        for(x=0;x<this.limbs.parts.length;x++){
-          //console.log("hey");
-          if(this.limbs.parts[x].name == 'head'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-        for(x=0;x<this.limbs.parts.length;x++){
-          if(this.limbs.parts[x] == part){
-            //this.limbs.parts.splice(x,1);
-          }
-        }
-        return;
-      }
-      if(part.name == 'torso'){
-        this.partSymbol = "¥";
-        this.alive = 0;
-        for(x=0;x<this.limbs.parts.length;x++){
-          if(this.limbs.parts[x] == part){
-            //console.log('its the torso');
-            break;
-          }
-          else{
-            //this.gib(this.limbs.parts[x]);
-          }
-        }
-        //return;
-
-      }
-      if(force == undefined){
-        force = randomGen(2,3);
-      }
-      giblet = new item(this.x,this.y,this.partSymbol,part.name);
-      grid[(this.y*10) + this.x].colorIn('C',4,2);
-      grid[(this.y*10) + this.x].items.push(giblet);
-      giblet.color = "<span style='background-color:#6B0000';>"+giblet.symbol+"</span>"
-      var direction = randomGen(1,9);
-
-
-      if(direction == 1){
-        direction = 'up';
-        dirNum = 10;
-        dirAdvX = 0;
-        dirAdvY = -1;
-      }
-      else if(direction == 2){
-        direction = "left";
-        dirNum = 1;
-        dirAdvX = -1;
-        dirAdvY = 0;
-      }
-      else if(direction == 3){
-        direction = "down";
-        dirNum = -10;
-        dirAdvX = 0;
-        dirAdvY = 1;
-      }
-      else if(direction == 4){
-        direction = "right";
-        dirNum = -1;
-        dirAdvX = 1;
-        dirAdvY = 0;
-      }
-      else if(direction == 5){
-        direction = "upright";
-        dirNum = 9;
-        dirAdvX = 1;
-        dirAdvY = -1;
-      }
-      else if(direction == 6){
-        direction = "upleft";
-        dirNum = 11;
-        dirAdvX = -1;
-        dirAdvY = -1;
-      }
-      else if(direction == 7){
-        direction = "downright";
-        dirNum = -11;
-        dirAdvX = 1;
-        dirAdvY = 1;
-      }
-      else if(direction == 8){
-        direction = "downleft";
-        dirNum = -9;
-        dirAdvX = -1;
-        dirAdvY = 1;
-      }
-      for(f=0;f<force;f++){
-        if(direction !== undefined){
-          for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-            if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
-              //console.log(part.name + " IS GONNA BUG OUT");
-              grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
-              grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
-            }
-          }
-          if(grid[(giblet.y*10) + giblet.x +(dirNum*-1)].desc !== 'floor'){
-            for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
-                //console.log(part.name + " IS GONNA BUG OUT");
-                grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
-                grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
-              }
-            }
-            //console.log(part.name + " IS GONNA BUG OUT1");
-          }
-          else{
-            giblet.x = giblet.x + dirAdvX;
-            giblet.y = giblet.y + dirAdvY;
-            grid[(giblet.y*10) + giblet.x].items.push(giblet);
-            for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-              if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
-                //console.log("destroy");
-                grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
-                grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
-                //console.log(part.name + " IS GONNA BUG OUT");
-              }
-            }
-            //console.log(part.name + " IS GONNA BUG OUT");
-          }
-
-        }
-        
-      }
-      for(g=0;g<grid[(giblet.y*10) + giblet.x +dirNum].items.length;g++){
-        if(grid[(giblet.y*10) + giblet.x+dirNum].items[g] == giblet){
-          //console.log(part.name + " IS GONNA BUG OUT");
-          grid[(giblet.y*10) + giblet.x+dirNum].items.splice(g,1);
-          grid[(giblet.y*10) + giblet.x].colorIn('C',4,2);
-        }
-      }
-      // for(x=0;x<this.limbs.parts.length;x++){
-      //   if(this.limbs.parts[x] == part){
-      //     //this.limbs.parts.splice(x,1);
-      //   }
-      // }
-      if(part.name == "right upper arm"){
-        for(x=0;x<this.limbs.parts.length;x++){
-          //console.log("hey");
-          if(this.limbs.parts[x].name == 'right lower arm'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == 'right lower arm'){
-        for(x=0;x<this.limbs.parts.length;x++){
-          if(this.limbs.parts[x].name == 'right hand'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == "left upper arm"){
-        for(x=0;x<this.limbs.parts.length;x++){
-          if(this.limbs.parts[x].name == 'left lower arm'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == 'left lower arm'){
-        for(x=0;x<this.limbs.parts.length;x++){
-          if(this.limbs.parts[x].name == 'left hand'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == "right upper leg"){
-        for(x=0;x<this.limbs.parts.length;x++){
-          //console.log("hey");
-          if(this.limbs.parts[x].name == 'right lower leg'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == "right lower leg"){
-        for(x=0;x<this.limbs.parts.length;x++){
-          //console.log("hey");
-          if(this.limbs.parts[x].name == 'right foot'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == "left upper leg"){
-        for(x=0;x<this.limbs.parts.length;x++){
-          //console.log("hey");
-          if(this.limbs.parts[x].name == 'left lower leg'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      if(part.name == "left lower leg"){
-        for(x=0;x<this.limbs.parts.length;x++){
-          //console.log("hey");
-          if(this.limbs.parts[x].name == 'left foot'){
-            this.gib(this.limbs.parts[x]);
-          }
-        }
-      }
-      console.log('Gibbed ' + part.name);
-    }
-
-}
-
 
 player.checkBrokenBones = function(){
 
-
   player.turnBuffer = 1;
   player.grasp = 0;
-  player.turnBuffer = 19-player.limbs.parts.length;
-  for(h=0;h<player.limbs.parts.length;h++){
-    if(player.limbs.parts[h].status == "broken" || player.limbs.parts[h].status == "sliced" || player.limbs.parts[h].status == "xshot"){
-      player.turnBuffer += 1;
-    }
 
-    if((player.limbs.parts[h].name == "right hand" || player.limbs.parts[h].name == "left hand") && (player.limbs.parts[h].status !== "broken" || player.limbs.parts[h].status !== "sliced" || player.limbs.parts[h].status !== "xshot")){
-      player.grasp ++;
-    }
-    if((player.limbs.parts[h].name == "right upper arm" || player.limbs.parts[h].name == "left upper arm" || player.limbs.parts[h].name == "left lower arm" || player.limbs.parts[h].name == "right lower arm") && (player.limbs.parts[h].status == "broken" || player.limbs.parts[h].status == "sliced" || player.limbs.parts[h].status == "xshot")){
-      //player.grasp --;
-      /*for(k=0;k<player.limbs.parts.length;k++){
-        if(player.limbs.parts[k].name == "left lower arm" || player.limbs.parts[k].name == "right lower arm" || player.limbs.parts[k].name == "right hand" || player.limbs.parts[k].name == "left hand"){
-          player.limbs.parts[k].status = "broken";
-        }
-      }*/
-
-    }
-    
-  }
-  if(player.grasp == 0){
-    if(player.wield !== 0){
-        for(y=0;y<player.inv.length;y++){
-          if(player.inv[y] = player.wield){
-            player.inv.splice(y,1);
-          }
-        }
-        grid[(player.y *10) + player.x].items.push(player.wield);
-        player.wield = 0;
-    }
-  }
-}
-
-player.fireAt = function(direction){
-  pause = 1;
-  //History.legible ++;
-  fire = function(frontx, fronty){
-    player.aiming = 0;
-    friendlyBullet = new projectile(frontx,fronty,direction, '#00FF00');
-    friendlyBullet.distance = 0;
-    grid[(fronty*10)+frontx].projectile = friendlyBullet;
-    //clearInterval(timer);
-    while(friendlyBullet.exists == 1){
-      console.log('calculating bullet');
-      if(grid[(friendlyBullet.y*10)+friendlyBullet.x].character !== null || grid[(friendlyBullet.y*10)+friendlyBullet.x].desc !== 'floor'){
-        friendlyBullet.exists = 0;
-        pause = 0;
-        if(grid[(friendlyBullet.y*10)+friendlyBullet.x].desc !== 'floor'){
-          grid[(friendlyBullet.y*10)+friendlyBullet.x].symbol = "#";
-          //grid[(friendlyBullet.y*10)+friendlyBullet.x].color = '<span style="background-color:#00AA00;"">'+grid[(friendlyBullet.y*10)+friendlyBullet.x].symbol+'</span>';
-          grid[(friendlyBullet.y*10)+friendlyBullet.x].colorIn(6,9,1);
-        }
-        else if(grid[(friendlyBullet.y*10)+friendlyBullet.x].character !== null){
-          combat(player, grid[(friendlyBullet.y*10)+friendlyBullet.x].character, player.wield.type, friendlyBullet.distance); //on HIT
-        }
-        grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = null;
-      }
-      else{
-        grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = null;
-        if(direction == 'left'){
-          friendlyBullet.x --;
-        }
-        else if(direction == 'up'){
-          friendlyBullet.y --;
-        }
-        else if(direction == 'right'){
-          friendlyBullet.x ++;
-        }
-        else if(direction == 'down'){
-          friendlyBullet.y ++;
-        }
-        grid[(friendlyBullet.y*10)+friendlyBullet.x].projectile = friendlyBullet;
-        friendlyBullet.distance ++;
-
-      }
-    }
-    fps = 25;
-  }
-  if(direction == 'left'){
-    fire(player.x-1,player.y);
-  }
-  else if(direction == 'up'){
-    fire(player.x, player.y-1);
-  }
-  else if(direction == 'right'){
-    fire(player.x+1, player.y);
-  }
-  else if(direction == 'down'){
-    fire(player.x, player.y+1);
-  }
-  
 }
 
 player.update = function(){
@@ -623,14 +341,14 @@ updateGraph = function(condition){
   for(y=0;y<graphSize; y++){
     for(i=0;i<graphSize;i++){
       if(true){
-        if(grid[counter].reticle != null){
-          graph.innerHTML += grid[counter].reticle.color;
+        if(grid[counter].ui != null){
+          graph.innerHTML += grid[counter].ui.color;
         }
         else if(grid[counter].character != null){
           graph.innerHTML += grid[counter].character.color;
         }
-        else if(grid[counter].projectile != null){
-          graph.innerHTML += grid[counter].projectile.symbol;
+        else if(grid[counter].projectiles.length != 0){
+          graph.innerHTML += grid[counter].projectiles[grid[counter].projectiles.length - 1].color;
         }
         else if(grid[counter].items.length != 0){
           graph.innerHTML += grid[counter].items[grid[counter].items.length -1].color;
@@ -704,8 +422,6 @@ update = function(skip){
     History.legible = 0;
   }
 
-  skillBox.innerHTML = "<span style='background-color:#497280'>[SKILLS]</span><br>";
-
   invBox.innerHTML = "<span style='background-color:#826033'>[INVENTORY]</span><br>";
 
   
@@ -718,16 +434,20 @@ update = function(skip){
     invBox.innerHTML += "<br>";
   }
 
-  /**if(player.blind > 0 && debounce == 0){
-    debounce = 1;
-    updateGraph("blind");
-  }
-  else{
-    updateGraph();
-  } **/
-  //location.href = "#historyend";
+  for (var i = 0; i < abilities.length; i++) {
+    if(abilities[i].cooldown > 0){
+      abilities[i].cooldown --;
+      abilities[i].image.innerHTML = abilities.cooldown;
+    }
+    else{
+      abilities[i].cooldown = 0;
+    }
+
+  };
+
   updateGraph();
 }
+
 //update();
  grid[player.x + player.y*10].character = player;
 

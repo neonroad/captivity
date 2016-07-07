@@ -1,7 +1,7 @@
 //Here we go.
 //saveTile = grid[((player.y*10) + player.x)];
 
-var map = {37: false, 38: false, 39: false, 40:false, 190:false, 188:false, 70:false, 81:false, 87:false, 69:false, 82:false};
+var map = {37: false, 38: false, 39: false, 40:false, 190:false, 188:false, 70:false, 81:false, 87:false, 69:false, 82:false, 27:false};
 document.body.onkeydown = function(event){
     if(debounce == 0){
       debounce = 1;
@@ -91,17 +91,18 @@ document.body.onkeydown = function(event){
       var keycode = event.charCode || event.keyCode;
       if (event.keyCode in map && player.alive == true && pause == 0) {
         map[event.keyCode] = true;
-         if((map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && map[70] && !map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && map[81] && !map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && map[87] && !map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && map[69] && !map[82]) ||
-            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && map[82])) {
+         if((map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && map[70] && !map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && map[81] && !map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && map[87] && !map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && map[69] && !map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && map[82] && !map[27]) ||
+            (!map[37] && !map[38] && !map[39] && !map[40] && !map[190] && !map[188] && !map[70] && !map[81] && !map[87] && !map[69] && !map[82] && map[27])){
             if (map[37]) {
                 if(checkAvailability("left") && player.aiming !== 1){
                   turn++;
@@ -197,8 +198,16 @@ document.body.onkeydown = function(event){
               }
             }
             else if(map[81]){ // Q Key
-              History.innerHTML+= 'ABILITY 1<br>';
-              Parrrley(player);
+              if(player.aiming == 0){
+                History.innerHTML+= 'Activating ' + player.ability1.abiltyName + '...<br>';
+                aimAbility.cancel();
+                player.ability1(player);
+              }
+              else{
+                player.ability1.fire();
+                aimAbility.cancel();
+              }
+
             }
             else if(map[87]){ // W Key
               History.innerHTML+= 'ABILITY 2<br>';
@@ -209,6 +218,14 @@ document.body.onkeydown = function(event){
             else if(map[82]){ // R Key
               History.innerHTML+= 'ABILITY 4<br>';
             }
+            else if(map[27]){
+              aimAbility.cancel();
+              console.log('cancel');
+            }
+
+
+
+
             for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){
               History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].items[t].name + "<br>";
             }

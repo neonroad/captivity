@@ -2,6 +2,7 @@ body{
 	background-color: #212738;
 }
 
+
 #background{
 	margin:auto;
 	border:5px solid black;
@@ -11,6 +12,8 @@ body{
 
 #gameGraph{
   font-family:'Courier';
+  height: 180px;
+  width:96px;
   display: inline-block;
   background-color: #66658A;
   overflow:hidden;
@@ -24,7 +27,10 @@ body{
 	background-color: #6AB4CC;
 	display: inline-block;
 	height:180px;
-	width: 200px;
+}
+
+#abilities{
+	background-color: #528FA3;
 }
 
 #inventory{
@@ -34,16 +40,6 @@ body{
 	background-color: #D9A159;
 	display: inline-block;
 	height:180px;
-	width: 300px;
-}
-#status{
-	margin-bottom:-403px;
-	display: inline-block;
-	font-family:'Courier';
-	text-align: center;
-	overflow: hidden;
-	background-color: #235E36;
-	height:583px;
 	width: 300px;
 }
 #statusScreen{
@@ -61,7 +57,7 @@ body{
 	font-family:'Courier';
 	overflow: auto;
 	height:400px;
-	width: 604px;
+	width: 481px;
 }
 
 #combat{
