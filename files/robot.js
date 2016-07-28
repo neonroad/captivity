@@ -752,8 +752,9 @@ dummy = function(x,y,symbol){
 	this.alive = true;
 	this.limbs = new Object;
 	this.limbs.parts = [];
-	this.Class = "Doom";
+	this.Class = "Demo";
 	this.level = 1;
+	this.kills = [];
 	if(grid[this.x + this.y*10].character !== undefined){
 	}
 	this.health = function(name,parent,child,status){
@@ -1121,7 +1122,7 @@ dummy = function(x,y,symbol){
 		if(player.alive == true && this.alive == true){
 			grid[this.x + this.y*10].character = this;
 			if(this.findTarget('Dummy') == this.actTarget('Dummy') && this.findTarget('Dummy') !== undefined){
-				combat(this, this.actTarget('Dummy'), 'unarmed');
+				combat(this, this.actTarget('Dummy'), 'stats');
 			}
 			if(this.findTarget('Dummy') == undefined){
 				return;
@@ -1176,7 +1177,10 @@ dummy = function(x,y,symbol){
 // for (var i = 0; i < 5; i++) {
 // 	mann = new dummy(randomGen(3,7),randomGen(3,9), "?");
 // };
-mann = new dummy(randomGen(5,7),randomGen(5,9), "?");
+mann = new dummy(9,7, "?");
+
+checkClass(mann);
+
 
 var weapon = new item(5,2,"/","weapon");
 weapon.type = "sharp";

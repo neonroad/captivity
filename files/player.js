@@ -198,22 +198,45 @@ document.body.onkeydown = function(event){
               }
             }
             else if(map[81]){ // Q Key
-              if(player.aiming == 0){
-                History.innerHTML+= 'Activating ' + player.ability1.abiltyName + '...<br>';
+              if(player.aiming == 0 && player.ability1.cooldown <= 0){
+                //History.innerHTML+= 'Activating ' + player.ability1.name + '...<br>';
                 aimAbility.cancel();
-                player.ability1(player);
+                player.ability1.aim(player);
+              }
+              else if(player.aiming == 1){
+                player.ability1.fire(player);
+                aimAbility.cancel();
               }
               else{
-                player.ability1.fire();
-                aimAbility.cancel();
+                History.innerHTML += "Can't cast that now!<br>";
               }
 
             }
             else if(map[87]){ // W Key
-              History.innerHTML+= 'ABILITY 2<br>';
+              if(player.aiming == 0 && player.ability2.cooldown <= 0){
+                //History.innerHTML+= 'Activating ' + player.ability2.name + '...<br>';
+                aimAbility.cancel();
+                player.ability2.fire(player);
+              }
+              else if(player.aiming == 1){
+              }
+              else{
+                History.innerHTML += "Can't cast that now!<br>";
+              }
             }
             else if(map[69]){ // E Key
-              History.innerHTML+= 'ABILITY 3<br>';
+              if(player.aiming == 0 && player.ability3.cooldown <= 0){
+                //History.innerHTML+= 'Activating ' + player.ability3.name + '...<br>';
+                aimAbility.cancel();
+                player.ability3.aim(player);
+              }
+              else if(player.aiming == 1){
+                player.ability3.fire(player);
+                aimAbility.cancel();
+              }
+              else{
+                History.innerHTML += "Can't cast that now!<br>";
+              }
             }
             else if(map[82]){ // R Key
               History.innerHTML+= 'ABILITY 4<br>';
@@ -226,8 +249,8 @@ document.body.onkeydown = function(event){
 
 
 
-            for(t=0;t<grid[(player.y*10)+player.x].items.length;t++){
-              History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].items[t].name + "<br>";
+            for(t=0;t<grid[(player.y*10)+player.x].units.length;t++){
+              History.innerHTML += "You stand atop a " + grid[(player.y*10)+player.x].units[t].desc + "...<br>";
             }
         }
       }

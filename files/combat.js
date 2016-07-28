@@ -35,6 +35,7 @@ combat = function(fighter, defender,style, finisher, continued){
 		if(hurtPart.status == "healthy"){
 			
 			History.legible += 1;
+			update(true);
 			History.innerHTML += "<span id='combat'>" + fighter.name + " injured " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ".</span> <br>";
 			hurtPart.status = "injured";	
 		}
@@ -42,6 +43,7 @@ combat = function(fighter, defender,style, finisher, continued){
 
 		else if(hurtPart.status == "injured"){
 			History.legible += 1;
+			update(true);
 			History.innerHTML += "<span id='combatWound'>" + fighter.name + " wounded " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ". <br>";
 			hurtPart.status = "wounded";
 		}
@@ -59,6 +61,8 @@ combat = function(fighter, defender,style, finisher, continued){
 			}
 
 			else{
+				History.legible ++;
+				update(true);
 				History.innerHTML += "<span id='combatBreak'>" +fighter.name + " broke " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + "! <br>";
 				hurtPart.status = "broken";
 				defender.bleed(defender, 2);
@@ -77,6 +81,7 @@ combat = function(fighter, defender,style, finisher, continued){
 
 		else{
 			History.legible += 1;
+			update(true);
 			History.innerHTML += "<span id='combatMiss'>" + fighter.name + " tried to hit " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ".</span> <br>";
 			//defender.bleed(fighter, 5);
 
@@ -224,7 +229,7 @@ combat = function(fighter, defender,style, finisher, continued){
 
 		if(hurtPart.status == "healthy"){
 			History.legible += 1;
-			History.innerHTML += "<span id='combat'>" + fighter.name + " injured " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + ".</span> <br>";
+			History.innerHTML += "<span id='combat'>" + fighter.name + " injured " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.desc + ".</span> <br>";
 			hurtPart.status = "wounded";	
 		}
 
@@ -240,7 +245,7 @@ combat = function(fighter, defender,style, finisher, continued){
 			}
 
 			else{
-				History.innerHTML += "<span id='combatBreak'>" +fighter.name + " broke " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.name + "! <br>";
+				History.innerHTML += "<span id='combatBreak'>" +fighter.name + " broke " + defender.name + "'s " + hurtPart.name + " with " + hittingPart.desc + "! <br>";
 				hurtPart.status = "broken";
 				defender.bleed(defender, 2);
 				//defender.limbs.parts.splice(hitChance,1);
@@ -289,5 +294,21 @@ combat = function(fighter, defender,style, finisher, continued){
 		History.innerHTML += "!</span><br>";
 		
 	}	
+
+	if(style == 'stats'){
+		defender.hp -= fighter.pd;
+		History.legible ++;
+		update(true);
+		History.innerHTML += fighter.name + " hit " + defender.name + " for " + fighter.pd + " physical damage!<br>";
+
+		if(defender.hp <= 0){
+			History.innerHTML += fighter.name + " kills " + defender.name + "!<br>";
+			defender.alive = false;
+			defender.killer = fighter;
+			fighter.kills.push(defender);
+			defender.update();
+			fighter.classUpdate('kill');
+		}
+	}
 
 }

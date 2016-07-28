@@ -2,6 +2,20 @@ body{
 	background-color: #212738;
 }
 
+#ability1, #ability2, #ability3, #ability4, #cooldown1, #cooldown2, #cooldown3, #cooldown4{
+	display: inline;
+	height:100px;
+	width: 100px;
+}
+
+#talk{
+	height:50px;
+	width:50px;
+}
+
+#talkText{
+	font-family: Verdana;
+}
 
 #background{
 	margin:auto;
@@ -23,24 +37,22 @@ body{
 #skills{
 	font-family:'Courier';
 	text-align: center;
-	overflow: hidden;
 	background-color: #6AB4CC;
-	display: inline-block;
-	height:180px;
+	width:480px;
 }
 
 #abilities{
 	background-color: #528FA3;
 }
 
-#inventory{
+#stats{
 	font-family:'Courier';
 	text-align: center;
 	overflow: hidden;
-	background-color: #D9A159;
+	background-color: #679C99;
 	display: inline-block;
 	height:180px;
-	width: 300px;
+	width:180px;
 }
 #statusScreen{
 	margin:auto;
@@ -56,7 +68,7 @@ body{
 	background-color:#989987;
 	font-family:'Courier';
 	overflow: auto;
-	height:400px;
+	height:300px;
 	width: 481px;
 }
 

@@ -1,3 +1,5 @@
+
+//Starting off by grabbing everything from the document and setting variables for them
 graph = document.getElementById("gameGraph");
 debounce = 0;
 toggle = 0;
@@ -7,9 +9,19 @@ History.legible = 0;
 
 skillBox = document.getElementById("skills");
 
-invBox = document.getElementById("inventory");
+statBox = document.getElementById("stats");
 
 statusBox = document.getElementById("statusScreen");
+
+abilityScreen = document.getElementById('abilities');
+
+ability1 = document.getElementById('ability1');
+
+cooldown1 = document.getElementById('cooldown1');
+
+ability2 = document.getElementById('ability2');
+
+cooldown2 = document.getElementById('cooldown2');
 
 statusScreen = new Object();
 
@@ -20,7 +32,28 @@ pause = 0;
 
 fps = 25;
 
+//Random number gen
+function randomGen(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function doRandom(min,max){
+  var x = randomGen(min, max);
+  if(x == min){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
+
 abilities = [];
+
+spell = function(name, user){
+  this.user = user;
+  this.name = name;
+  this.cooldown = 0;
+}
 
 var grid = [];
 
@@ -29,6 +62,33 @@ checkList = function(list, object){
     if(list[x] == object){
       list.splice(x,1);
     }
+  }
+}
+zones = [];
+
+zone = function(x, y, desc, owner){
+  this.x = x;
+  this.y = y;
+  this.desc = desc;
+  this.owner = owner;
+  zones.push(this);
+  this.update = function(){
+      grid[this.x + this.y*10].zones.push(this);
+  }  
+  this.update();
+}
+
+units = [];
+
+unit = function(x, y, symbol, color, desc, owner){
+  this.x = x;
+  this.y = y;
+  this.symbol = symbol;
+  this.color ='<span style="background-color:'+color+';">'+this.symbol+'</span>';
+  this.desc = desc;
+  this.owner = owner;
+  this.update = function(){
+      grid[this.x + this.y*10].units.push(this);
   }
 }
 
@@ -45,28 +105,35 @@ UI = function(x, y, symbol, color){
     if(grid[this.x+this.y*10].character !== null){
       this.color = '<span style="background-color:#317991;">'+grid[this.x+this.y*10].character.symbol+'</span>';
     }
+    if(grid[this.x+this.y*10].units.length !== 0){
+      this.color = '<span style="background-color:#317991;">'+grid[this.x+this.y*10].units[grid[this.x+this.y*10].units.length-1].symbol+'</span>';
+    }
   }
 }
 
 particles = [];
 
-particle = function(x, y, symbol, color){
+particle = function(x, y, symbol, color, owner){
   this.x = x;
   this.y = y;
   this.symbol = symbol;
   this.color ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
+  this.owner = owner;
   this.update = function(){
     grid[(y*10) + x].particles.push(this)
   }
   this.update();
   particles.push(this);
+  this.remove = function(){
+    checkList( grid[(y*10) + x].particles, this);
+  }
 }
 
-projectile = function(x, y, owner, color, name){
+projectile = function(x, y, owner, color, desc){
   this.x = x;
   this.y = y;
   this.symbol = "╬";
-  this.name = name;
+  this.desc = desc;
   this.owner = owner;
   this.exists = 1;
   this.color ='<span style="background-color:'+color+';"">'+this.symbol+'</span>';
@@ -74,8 +141,16 @@ projectile = function(x, y, owner, color, name){
     grid[(this.y*10) + this.x].projectiles.push(this);
   }
   this.checkContact = function(){
-    if(grid[(this.y*10) + this.x].character !== owner || grid[(this.y*10) + this.x].character !== null){
+    if(grid[(this.y*10) + this.x].character !== owner && grid[(this.y*10) + this.x].character !== null){
       combat(owner, grid[(this.y*10) + this.x].character, 'armed');
+      for (var i = 0; i < grid[this.x+this.y*10].projectiles.length; i++) {
+        if(grid[this.x+this.y*10].projectiles[i] == this){
+          grid[this.x+this.y*10].projectiles.splice(this, 1);
+        }
+      };
+    }
+    else if(grid[(this.y*10) + this.x].units.length !== 0){
+      grid[(this.y*10) + this.x].units[grid[(this.y*10) + this.x].units.length-1].checkContact(this);
       for (var i = 0; i < grid[this.x+this.y*10].projectiles.length; i++) {
         if(grid[this.x+this.y*10].projectiles[i] == this){
           grid[this.x+this.y*10].projectiles.splice(this, 1);
@@ -93,8 +168,10 @@ point = function(x,y,symbol,desc){
   this.character = null;
   this.desc = desc;
   this.items = [];
+  this.zones = [];
   this.projectiles = [];
   this.particles = [];
+  this.units = [];
   this.ui = null;
   this.color = "~";
   this.colorIn = function(constant, changing, version){
@@ -124,11 +201,6 @@ item = function(x,y,symbol,desc){
   this.color = "<span style='background-color:#555555';>"+symbol+"</span>";
   this.name = desc;
   grid[(this.y * 10) + this.x].items.push(this);
-}
-
-//Random number gen
-function randomGen(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
 }
 
 //var t = new point(3,4);
@@ -169,6 +241,7 @@ player.inv = [];
 player.wield = 0;
 player.aiming = 0;
 player.level = 1;
+player.kills = [];
 player.turnBuffer = 1;
 player.createLimbs = function(){
   player.limbs.head = new health('head');
@@ -275,6 +348,9 @@ player.update = function(){
     // },100);
     //grid[((player.y * 10) + player.x)].items.push(playerCorpse);
   }
+  if(player.classUpdate !== undefined){
+    player.classUpdate();
+  }
 }
 
 
@@ -350,6 +426,9 @@ updateGraph = function(condition){
         else if(grid[counter].projectiles.length != 0){
           graph.innerHTML += grid[counter].projectiles[grid[counter].projectiles.length - 1].color;
         }
+        else if(grid[counter].units.length != 0){
+          graph.innerHTML += grid[counter].units[grid[counter].units.length - 1].color;
+        }
         else if(grid[counter].items.length != 0){
           graph.innerHTML += grid[counter].items[grid[counter].items.length -1].color;
         }
@@ -393,12 +472,16 @@ log = "";
 update = function(skip){
 
   //statusScreen.draw();
-  if(true){
+  if(skip !== true){
     player.update();
   }
+
   if(player.alive == true && skip !== true){
     for(e=0;e<entities.length;e++){
       entities[e].update();
+      if(entities[e].classUpdate !== undefined){
+        entities[e].classUpdate();
+      }
       if(entities[e] == undefined){
         break;
       }
@@ -416,35 +499,42 @@ update = function(skip){
 
     }
   }
-  if(History.legible > 5){
+  if(History.legible > 4){
     log += History.innerHTML;
     History.innerHTML = "<span style='background-color:#6D6E5F'>[HISTORY]</span><br>";
-    History.legible = 0;
+    History.legible = 1;
   }
 
-  invBox.innerHTML = "<span style='background-color:#826033'>[INVENTORY]</span><br>";
+  statBox.innerHTML = "<span style='background-color:#90C3D4'>[STATS]</span><br>";
 
-  
-
-  for(i=0;i<player.inv.length;i++){
-    invBox.innerHTML += player.inv[i].name;
-    if(player.wield == player.inv[i]){
-      invBox.innerHTML += " (wielding)";
+  for(var e=0;e<zones.length;e++){
+    zones[e].update();
+    if(zones[e] == undefined){
+      break;
     }
-    invBox.innerHTML += "<br>";
   }
+
+
+  for (var i = 0; i < units.length; i++) {
+    units[i].update();
+  };
+
 
   for (var i = 0; i < abilities.length; i++) {
     if(abilities[i].cooldown > 0){
       abilities[i].cooldown --;
-      abilities[i].image.innerHTML = abilities.cooldown;
+      if(abilities[i].cooldownElement !== undefined){
+        abilities[i].cooldownElement.innerHTML = abilities[i].cooldown + "";
+      }
     }
     else{
       abilities[i].cooldown = 0;
+      if(abilities[i].cooldownElement !== undefined){
+        abilities[i].cooldownElement.innerHTML = "";
+      }
     }
 
   };
-
   updateGraph();
 }
 
