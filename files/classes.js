@@ -19,8 +19,10 @@ checkClass = function(target){
 			break;
 		case 'Demo':
 			console.log('Class: Demo');
-			ability1.src = "assets/chars/demo/ability1.png";
-			ability2.src = "";
+			if(target == player){
+				ability1.src = "assets/chars/demo/ability1.png";
+				ability2.src = "";				
+			}
 			demoClass(target);
 			target.classUpdate = function(reason){
 				if(target.classUpdate.cooldown == undefined){
@@ -62,6 +64,18 @@ checkClass = function(target){
 					}
 				}
 
+				//CC'd
+				if(target.mobility == false && doRandom(1,5)){
+					switch(randomGen(1,3)){
+						case 1:
+							talk(target, 'panic', "Hnng! I can't... move..!");
+							break;
+						case 2:
+							talk(target, 'panic', "My limbs fail me!");
+							break;
+					}					
+				}
+
 				//AI?
 				if(target.target !== undefined){
 					if(target.target.Class == target.Class && target.classUpdate.cooldown == 0){
@@ -84,6 +98,19 @@ checkClass = function(target){
 						target.classUpdate.cooldown = 60;
 					}
 				}
+			}
+			break;
+		case 'Cowgal':
+			console.log('Class: Cowgal');
+			if(target == player){
+				ability1.src = "assets/chars/cowgal/ability1.png";
+				ability2.src = "assets/chars/cowgal/ability2.png";	
+				ability3.src = "assets/chars/cowgal/ability3.png";	
+				ability4.src = "assets/chars/cowgal/ability4.png";		
+			}
+			cowgalClass(target);
+			target.classUpdate = function(reason){
+
 			}
 	}
 }

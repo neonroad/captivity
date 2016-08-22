@@ -11,6 +11,8 @@ skillBox = document.getElementById("skills");
 
 statBox = document.getElementById("stats");
 
+buffBox = document.getElementById("buffs");
+
 statusBox = document.getElementById("statusScreen");
 
 abilityScreen = document.getElementById('abilities');
@@ -53,6 +55,40 @@ spell = function(name, user){
   this.user = user;
   this.name = name;
   this.cooldown = 0;
+}
+
+buff = function(buff, name, duration){
+  this.buff = buff;
+  this.name = name;
+  this.duration = duration;
+  this.update = function(){
+    this.duration -= 1;
+  }
+}
+
+checkBuffs = function(unit){
+    for (var i = 0; i < unit.buffs.length; i++) {
+    unit.buffs[i].unit = unit;
+
+    //activate buffs
+    if(unit.buffs[i].name == "Roll Dodge!"){
+      unit.immuneToCombat = 1;
+      unit.immuneToDamage = 1;
+      unit.immuneToCC = 1;
+      unit.immuneToTarget = 1;
+    }
+
+
+    if(unit.buffs[i].name == "Pocket Sand Stunned!" && unit.immuneToAll !== 1){
+      unit.mobility = false;
+    }
+    //remove buffs
+    unit.buffs[i].update();
+    if(unit.buffs[i].duration <= 0){
+      unit.buffs[i].purify();
+    checkList(unit.buffs, unit.buffs[i]);
+    }
+    };
 }
 
 var grid = [];
@@ -123,10 +159,22 @@ particle = function(x, y, symbol, color, owner){
     grid[(y*10) + x].particles.push(this)
   }
   this.update();
-  particles.push(this);
-  this.remove = function(){
+  this.removeParticle = function(){
     checkList( grid[(y*10) + x].particles, this);
+    checkList( particles, this);
   }
+}
+
+var makeParticle = function(unit, symbol, color, step){
+  var dust = new particle(unit.x,unit.y, symbol, color, unit);
+  dust.step = step;
+  dust.update = function(){
+    dust.step --;
+    if(dust.step <= 0){
+      dust.removeParticle();
+    }
+  }
+  particles.push(dust);             
 }
 
 projectile = function(x, y, owner, color, desc){
@@ -242,6 +290,7 @@ player.wield = 0;
 player.aiming = 0;
 player.level = 1;
 player.kills = [];
+player.buffs = [];
 player.turnBuffer = 1;
 player.createLimbs = function(){
   player.limbs.head = new health('head');
@@ -337,6 +386,7 @@ player.checkBrokenBones = function(){
 }
 
 player.update = function(){
+  checkBuffs(player);
   player.checkBrokenBones();
   if(player.alive == false){
     var playerCorpse = new item(player.x,player.y,"@",'corpse');
@@ -387,7 +437,7 @@ drawGraph = function(){
       }
       else{
         
-        if(randomGen(0,15) == 1){
+        if(randomGen(1,15) == 1){
           newPoint = new point(GridX,GridY,"O",'wall');
           newPoint.colorIn(9,9,0);
           grid.push(newPoint);
@@ -411,9 +461,6 @@ updateGraph = function(condition){
   //console.log('updating graph');
   graph.innerHTML = "";
   var counter = 0;
-  for(p=0; p < particles.length; p++){
-    particles[p].update();
-  }
   for(y=0;y<graphSize; y++){
     for(i=0;i<graphSize;i++){
       if(true){
@@ -469,6 +516,10 @@ updateGraph();
 
 log = "";
 
+clearHistory = function(){
+  History.innerHTML = "";
+}
+
 update = function(skip){
 
   //statusScreen.draw();
@@ -479,9 +530,6 @@ update = function(skip){
   if(player.alive == true && skip !== true){
     for(e=0;e<entities.length;e++){
       entities[e].update();
-      if(entities[e].classUpdate !== undefined){
-        entities[e].classUpdate();
-      }
       if(entities[e] == undefined){
         break;
       }
@@ -506,6 +554,22 @@ update = function(skip){
   }
 
   statBox.innerHTML = "<span style='background-color:#90C3D4'>[STATS]</span><br>";
+  statBox.innerHTML += "Health Points:" + player.hp + "/ " + player.hpMax + "<br>";
+  statBox.innerHTML += "Physical Damage:" + player.pd + "<br>";
+  statBox.innerHTML += "Magical Damage:" + player.md + "<br>";
+  statBox.innerHTML += "Armor Class:" + player.ac + "<br>";
+  statBox.innerHTML += "Magic Resistance:" + player.mr + "<br>";
+
+  buffBox.innerHTML = "<span style='background-color:#5E9FB5'>[BUFFS]</span><br>";
+
+  for (var i = 0; i < player.buffs.length; i++) {
+    if(player.buffs[i].buff == true){
+      buffBox.innerHTML+= "<span style ='background-color:#3EB54F'>[" + player.buffs[i].name + ":" + "(" + player.buffs[i].duration + ")" + " " + player.buffs[i].desc + "]</span><br>";
+    }
+    else{
+      buffBox.innerHTML+= "<span style ='background-color:#A33C3C'>[" + player.buffs[i].name + ":" + "(" + player.buffs[i].duration + ")" + " " + player.buffs[i].desc + "]</span><br>";
+    }
+  };
 
   for(var e=0;e<zones.length;e++){
     zones[e].update();
@@ -514,11 +578,24 @@ update = function(skip){
     }
   }
 
+  var currentParticles = particles.length;
+  for(p=0; p < particles.length; p++){
+    if(particles[p] == undefined){
+      break;
+    }
+    else{
+      particles[p].update();
+      if(currentParticles !== particles.length){
+        p --;
+        currentParticles = particles.length;
+      }
+      
+    }
+  }
 
   for (var i = 0; i < units.length; i++) {
     units[i].update();
   };
-
 
   for (var i = 0; i < abilities.length; i++) {
     if(abilities[i].cooldown > 0){

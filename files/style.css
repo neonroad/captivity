@@ -4,8 +4,8 @@ body{
 
 #ability1, #ability2, #ability3, #ability4, #cooldown1, #cooldown2, #cooldown3, #cooldown4{
 	display: inline;
-	height:100px;
-	width: 100px;
+	height:50px;
+	width: 50px;
 }
 
 #talk{
@@ -27,7 +27,7 @@ body{
 #gameGraph{
   font-family:'Courier';
   height: 180px;
-  width:96px;
+  width:97px;
   display: inline-block;
   background-color: #66658A;
   overflow:hidden;
@@ -53,6 +53,15 @@ body{
 	display: inline-block;
 	height:180px;
 	width:180px;
+}
+#buffs{
+	font-family:'Courier';
+	text-align: center;
+	overflow: hidden;
+	background-color: #3168B5;
+	display: inline-block;
+	height:180px;
+	width:195px;
 }
 #statusScreen{
 	margin:auto;

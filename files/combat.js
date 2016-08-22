@@ -296,10 +296,19 @@ combat = function(fighter, defender,style, finisher, continued){
 	}	
 
 	if(style == 'stats'){
-		defender.hp -= fighter.pd;
 		History.legible ++;
 		update(true);
-		History.innerHTML += fighter.name + " hit " + defender.name + " for " + fighter.pd + " physical damage!<br>";
+		if(fighter.name == undefined){
+			fighter.name = fighter.desc;
+		}
+		if(defender.name == undefined){
+			defender.name = fighter.desc;
+		}
+
+		finalDamage = fighter.pd * (1- ((0.06*defender.ac)/(1+(0.06*Math.abs(defender.ac)))));
+		finalDamage = Math.round(finalDamage);
+		defender.hp -= finalDamage;
+		History.innerHTML += fighter.name + " hit " + defender.name + " for " + finalDamage + " physical damage!<br>";
 
 		if(defender.hp <= 0){
 			History.innerHTML += fighter.name + " kills " + defender.name + "!<br>";
@@ -309,6 +318,25 @@ combat = function(fighter, defender,style, finisher, continued){
 			defender.update();
 			fighter.classUpdate('kill');
 		}
+	}
+	if(style == 'ability'){
+		//History.legible ++;
+		update(true);
+
+		finalDamage = fighter.pd * (1- ((0.06*defender.ac)/(1+(0.06*Math.abs(defender.ac)))));
+		finalDamage = Math.round(finalDamage);
+		defender.hp -= finalDamage;
+
+		History.innerHTML += fighter.owner.name + " hit " + defender.name + " with " + fighter.desc + " for " + finalDamage + " physical damage!<br>";
+
+		if(defender.hp <= 0){
+			History.innerHTML += fighter.owner.name + " kills " + defender.name + "!<br>";
+			defender.alive = false;
+			defender.killer = fighter.owner;
+			fighter.owner.kills.push(defender);
+			defender.update();
+			fighter.owner.classUpdate('kill');
+		}	
 	}
 
 }

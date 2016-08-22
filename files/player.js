@@ -7,15 +7,15 @@ document.body.onkeydown = function(event){
       debounce = 1;
       var checkAvailability = function(direction){
 
-        if(direction == "right"){
+        if(direction == "right" && player.aiming !== 1){
           //testTile = player;
           prevLoc = ((player.y*10) + player.x);
           if(grid[(prevLoc + 1)].desc !== "floor" || grid[(prevLoc + 1)].character !== null){
             //console.log(grid[(prevLoc + 1)].symbol);
             //console.log("Can't do that!");
-            if(grid[(prevLoc + 1)].character !== null && player.Class == 'Doom'){
+            if(grid[(prevLoc + 1)].character !== null){
               player.checkBrokenBones();
-              combat(player,grid[(prevLoc + 1)].character,"unarmed");
+              combat(player,grid[(prevLoc + 1)].character,"stats");
               turn++;
               update();
             }
@@ -27,14 +27,14 @@ document.body.onkeydown = function(event){
           }
         }
 
-        else if(direction == "down"){
+        else if(direction == "down" && player.aiming !== 1){
           prevLoc = ((player.y*10) + player.x);
           if(grid[(prevLoc + 10)].desc !== "floor" || grid[(prevLoc + 10)].character !== null){
             //console.log(grid[(prevLoc + 10)].symbol);
             //console.log("Can't do that!");
-            if(grid[(prevLoc + 10)].character !== null && player.Class == 'Doom'){
+            if(grid[(prevLoc + 10)].character !== null){
               player.checkBrokenBones();
-              combat(player,grid[(prevLoc + 10)].character,"unarmed");
+              combat(player,grid[(prevLoc + 10)].character,"stats");
               turn++;
               update();
             }
@@ -46,15 +46,15 @@ document.body.onkeydown = function(event){
           }
         }
 
-        else if(direction == "left"){
+        else if(direction == "left" && player.aiming !== 1){
           //testTile = player;
           prevLoc = ((player.y*10) + player.x);
           if(grid[(prevLoc - 1)].desc !== "floor" || grid[(prevLoc - 1)].character !== null){
             //console.log(grid[(prevLoc - 1)].symbol);
             //console.log("Can't do that!");
-            if(grid[(prevLoc -1)].character !== null && player.Class == 'Doom'){
+            if(grid[(prevLoc -1)].character !== null){
               player.checkBrokenBones();
-              combat(player,grid[(prevLoc -1)].character,"unarmed");
+              combat(player,grid[(prevLoc -1)].character,"stats");
               turn++;
               update();
             }
@@ -66,14 +66,14 @@ document.body.onkeydown = function(event){
           }
         }
 
-        else if(direction == "up"){
+        else if(direction == "up" && player.aiming !== 1){
           prevLoc = ((player.y*10) + player.x);
           if(grid[(prevLoc - 10)].desc !== "floor" || grid[(prevLoc - 10)].character !== null){
             //console.log(grid[(prevLoc - 10)].symbol);
             //console.log("Can't do that!");
-            if(grid[(prevLoc - 10)].character !== null && player.Class == 'Doom'){
+            if(grid[(prevLoc - 10)].character !== null){
               player.checkBrokenBones();
-              combat(player,grid[(prevLoc - 10)].character,"unarmed");
+              combat(player,grid[(prevLoc - 10)].character,"stats");
               turn++;
               update();
             }
@@ -216,9 +216,11 @@ document.body.onkeydown = function(event){
               if(player.aiming == 0 && player.ability2.cooldown <= 0){
                 //History.innerHTML+= 'Activating ' + player.ability2.name + '...<br>';
                 aimAbility.cancel();
-                player.ability2.fire(player);
+                player.ability2.aim(player);
               }
               else if(player.aiming == 1){
+                player.ability2.fire(player);
+                aimAbility.cancel();
               }
               else{
                 History.innerHTML += "Can't cast that now!<br>";
@@ -239,11 +241,23 @@ document.body.onkeydown = function(event){
               }
             }
             else if(map[82]){ // R Key
-              History.innerHTML+= 'ABILITY 4<br>';
+              if(player.aiming == 0 && player.ability4.cooldown <= 0){
+                //History.innerHTML+= 'Activating ' + player.ability3.name + '...<br>';
+                aimAbility.cancel();
+                player.ability4.aim(player);
+              }
+              else if(player.aiming == 1){
+                player.ability4.fire(player);
+                aimAbility.cancel();
+              }
+              else{
+                History.innerHTML += "Can't cast that now!<br>";
+              }
             }
-            else if(map[27]){
+            else if(map[27]){ //ESC key
               aimAbility.cancel();
               console.log('cancel');
+              clearHistory();
             }
 
 
